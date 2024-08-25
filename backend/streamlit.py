@@ -5,7 +5,13 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
 
+<<<<<<< Updated upstream
 st.title('Insert Title Here')
+=======
+### to run streamlit app `streamlit run backend/streamlit.py`
+
+st.title('Banking Data Analysis')
+>>>>>>> Stashed changes
 
 # Sidebar setup
 with st.sidebar:
