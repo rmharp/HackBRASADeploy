@@ -14,7 +14,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize session state variables
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
 
 st.set_page_config(layout="wide")
 
@@ -37,6 +39,10 @@ def login_page():
 
 # Define the main dashboard content
 def dashboard_page():
+
+
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    
     #global vars
     if 'inbound_total' not in st.session_state:
         st.session_state.inbound_total = 0
