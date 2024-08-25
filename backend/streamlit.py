@@ -64,9 +64,19 @@ def pieCharts():
     inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
     outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
 
-    # Display inbound and outbound totals
-    st.metric(label="Profit", value=f"${inbound_total:,.2f}")
-    st.metric(label="Expenditure", value=f"${outbound_total:,.2f}")
+    # inbound and outbound totals
+    st.markdown(
+        f"""
+        <div style="text-align: left; padding-top: 20px">
+            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Profit</p>
+            <p style="color: green; font-size: 32px; font-weight: bold;">${inbound_total:,.2f}</p>
+            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Expenditure</p>
+            <p style="color: red; font-size: 32px; font-weight: bold;">${outbound_total:,.2f}</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    
     st.markdown('#')
 
     # Calculate percentages
@@ -117,27 +127,83 @@ def pieCharts():
     # Show figure
     st.plotly_chart(fig)
 
+def total_sales_chart():
+    # Filter sales data for the specific client ID
+    sales_df = df['sales']
+    sales_df['document_id'] = sales_df['document_id'].astype(str)
+    sales_data = sales_df[(sales_df['document_id'] == current_id)]
+
+    # Convert date_time to datetime and filter by date range
+    sales_data['date_time'] = pd.to_datetime(sales_data['date_time'])
+    filtered_sales = sales_data[(sales_data['date_time'] >= pd.to_datetime(start_date)) & 
+                                (sales_data['date_time'] <= pd.to_datetime(end_date))]
+
+    # Aggregate sales values by week and calculate cumulative sales
+    sales_over_time = filtered_sales.set_index('date_time').resample('W')['value'].sum().reset_index()
+    sales_over_time = sales_over_time.rename(columns={'date_time': 'Week', 'value': 'Total Sales'})
+    sales_over_time['Cumulative Sales'] = sales_over_time['Total Sales'].cumsum()
+
+    # Create the Plotly figure with cumulative sales data
+    fig = go.Figure(data=go.Scatter(x=sales_over_time['Week'], y=sales_over_time['Cumulative Sales'], mode='lines+markers'))
+
+    # Update the layout
+    fig.update_layout(
+        title='Cumulative Sales Over Time (Weekly)',
+        xaxis_title='Week',
+        yaxis_title='Cumulative Sales ($)',
+        paper_bgcolor='#262730',
+        plot_bgcolor='#262730',
+        font=dict(color='white'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='#444',
+            color='white'
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='#444',
+            color='white'
+        )
+    )
+
+    # Display the chart using Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def sales_trends_chart():
-    # Filter bank data for the specific client ID
     bank_df = df['bank']
     bank_df['document_id'] = bank_df['document_id'].astype(str)
-    user_data = bank_df[(bank_df['document_id'] == current_id) & (bank_df['type'] == 'pix_in')]
+    user_data = bank_df[(bank_df['document_id'] == current_id) & (bank_df['type'].isin(['pix_in', 'pix_out']))]
 
     user_data['date_time'] = pd.to_datetime(user_data['date_time'])
-    user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & (user_data['date_time'] <= pd.to_datetime(end_date))]
-    daily_incoming = user_data.groupby('date_time')['value'].sum().reset_index()
+    user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & 
+                          (user_data['date_time'] <= pd.to_datetime(end_date))]
 
-    # Create line chart
-    fig = go.Figure(data=go.Scatter(x=daily_incoming['date_time'], y=daily_incoming['value'], mode='lines+markers'))
+    user_data['value'] = user_data.apply(lambda x: x['value'] if x['type'] == 'pix_in' else -x['value'], axis=1)
+    weekly_transactions = user_data.set_index('date_time').resample('W')['value'].sum().reset_index()
+
+    fig = go.Figure(data=go.Scatter(x=weekly_transactions['date_time'], y=weekly_transactions['value'], mode='lines+markers'))
 
     fig.update_layout(
-        title='Sales Trends Over Time',
+        title='Net Bank Trends Over Time (Weekly)',
         xaxis_title='Date',
-        yaxis_title='Total Incoming Money',
-        paper_bgcolor='#263238',
-        plot_bgcolor='#263238',
-        font=dict(color='white')
+        yaxis_title='Net Money ($)',
+        paper_bgcolor='#262730',
+        plot_bgcolor='#262730',
+        font=dict(color='white'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='#444',
+            color='white'
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='#444',
+            color='white'
+        )
     )
+
+
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -156,3 +222,5 @@ with col[1]:
     # st.markdown('#### Total Population')
     st.markdown('#')
     sales_trends_chart()
+    st.markdown('#')
+    total_sales_chart()
