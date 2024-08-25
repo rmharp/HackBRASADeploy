@@ -27,9 +27,6 @@ with st.sidebar:
         value=datetime(2023, 5, 31)
     )
 
-    # Display the selected date interval
-    st.write(f"Selected interval: {start_date} to {end_date}")
-
     # Input for Client ID
     current_id = st.text_input('Enter Client ID:', value='6347736874608223396')
 
@@ -68,15 +65,26 @@ def pieCharts():
     st.markdown(
         f"""
         <div style="text-align: left; padding-top: 20px">
-            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Profit</p>
+            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Income</p>
             <p style="color: green; font-size: 32px; font-weight: bold;">${inbound_total:,.2f}</p>
-            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Expenditure</p>
+            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Expenses</p>
             <p style="color: red; font-size: 32px; font-weight: bold;">${outbound_total:,.2f}</p>
         </div>
         """, 
         unsafe_allow_html=True
     )
     
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #f0f2f6;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.markdown('#')
 
     # Calculate percentages
@@ -109,7 +117,6 @@ def pieCharts():
         showlegend=False
     ), 2, 1)
 
-    # Add annotations
     fig.add_annotation(x=0.5, y=0.78, text="Inbound", showarrow=False)
     fig.add_annotation(x=0.5, y=0.83, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
     fig.add_annotation(x=0.5, y=0.15, text="Outbound", showarrow=False)
@@ -124,7 +131,6 @@ def pieCharts():
         font=dict(color='white')
     )
 
-    # Show figure
     st.plotly_chart(fig)
 
 def total_sales_chart():
@@ -148,25 +154,27 @@ def total_sales_chart():
 
     # Update the layout
     fig.update_layout(
-        title='Cumulative Sales Over Time (Weekly)',
+        title={
+            'text': 'Cumulative Sales Over Time (Weekly)',
+            'font': {'color': 'black'}  # Set the title color to black
+        },
         xaxis_title='Week',
         yaxis_title='Cumulative Sales ($)',
-        paper_bgcolor='#262730',
-        plot_bgcolor='#262730',
-        font=dict(color='white'),
+        paper_bgcolor='#ffffff', 
+        plot_bgcolor='#ffffff',
+        font=dict(color='black'),
         xaxis=dict(
             showgrid=True,
             gridcolor='#444',
-            color='white'
+            color='black'
         ),
         yaxis=dict(
             showgrid=True,
             gridcolor='#444',
-            color='white'
+            color='black'
         )
     )
 
-    # Display the chart using Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
 
