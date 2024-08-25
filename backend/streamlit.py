@@ -16,6 +16,34 @@ load_dotenv()
 
 st.set_page_config(layout="wide")
 
+# Define the relative file path
+relative_file_path = 'backend/data/unique_document_ids.csv'
+
+# Load the CSV file to get the sales data
+def load_sales_data():
+    # Print the current working directory
+    #st.write("Current working directory:", os.getcwd())
+    
+    # Convert the relative file path to an absolute path based on the current working directory
+    file_path = os.path.join(os.getcwd(), relative_file_path)
+    
+    # Check if the file exists
+    if os.path.exists(file_path):
+        #st.write("File found:", file_path)
+        try:
+            # Attempt to read the CSV file
+            df = pd.read_csv(file_path)
+            #st.write("File loaded successfully!")
+            return df
+        except Exception as e:
+            st.error(f"Error reading the file: {e}")
+            return pd.DataFrame()  # Return an empty DataFrame if the file cannot be read
+    else:
+        st.error(f"File not found: {file_path}")
+        return pd.DataFrame()  # Return an empty DataFrame if the file does not exist
+
+# Load the sales data
+df_sales = load_sales_data()
 
 state = st.session_state
 
@@ -48,16 +76,15 @@ init_state('password', '')
 
 # Function to check login credentials
 def login(username, password):
-    return username == "admin" and password == "stoneco"
+    return username in df_sales['document_id'].astype(str).unique() and password == "stoneco"
 
 # Define the login page
 def login_page():
     st.markdown("<h1 style='text-align: center; color: black;'>Login Page</h1>", unsafe_allow_html=True)
-    
     if not state.logged_in:
         # Display login form
         st.text_input(
-            "Username", value=state.username, key='username_input',
+            "Username (Document ID)", value=state.username, key='username_input',
             on_change=_set_state_cb, kwargs={'username': 'username_input'}
         )
         st.text_input(
@@ -78,6 +105,8 @@ def main():
     if not state.logged_in:
         login_page()
     else:
+        # Current Client ID
+        current_id = state.username
         openai.api_key = os.getenv("OPENAI_API_KEY")
     
         # Initialize global variables if not present
@@ -119,9 +148,6 @@ def main():
                 max_value=datetime(2023, 5, 31),
                 value=datetime(2023, 5, 31)
             )
-        
-            # Input for Client ID
-            current_id = st.text_input('Enter Client ID:', value='6347736874608223396')
         
         # loading function
         @st.cache_data
