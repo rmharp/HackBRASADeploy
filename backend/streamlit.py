@@ -5,9 +5,26 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
 
-
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='text-align: center; color: white;'>Insert Title Here</h1>", unsafe_allow_html=True)
+
+#global vars
+if 'inbound_total' not in st.session_state:
+    st.session_state.inbound_total = 0
+if 'outbound_total' not in st.session_state:
+    st.session_state.outbound_total = 0
+
+st.markdown("<h1 style='text-align: center; color: black;'>Business Dashboard</h1>", unsafe_allow_html=True)
+
+st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #f0f2f6;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+)
 
 # Sidebar setup
 with st.sidebar:
@@ -58,39 +75,14 @@ def pieCharts():
     user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & (user_data['date_time'] <= pd.to_datetime(end_date))]
 
     # Calculate inbound and outbound totals
-    inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
-    outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
+    st.session_state.inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
+    st.session_state.outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
 
-    # inbound and outbound totals
-    st.markdown(
-        f"""
-        <div style="text-align: left; padding-top: 20px">
-            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Income</p>
-            <p style="color: green; font-size: 32px; font-weight: bold;">${inbound_total:,.2f}</p>
-            <p style="color: white; font-size: 16px; margin-bottom: 4px;">Expenses</p>
-            <p style="color: red; font-size: 32px; font-weight: bold;">${outbound_total:,.2f}</p>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    
-    st.markdown(
-        """
-        <style>
-        .stApp {
-            background-color: #f0f2f6;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown('#')
 
     # Calculate percentages
-    total_spending = inbound_total + outbound_total
-    inbound_percent = round((inbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
-    outbound_percent = round((outbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
+    total_spending = st.session_state.inbound_total + st.session_state.outbound_total
+    inbound_percent = round((st.session_state.inbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
+    outbound_percent = round((st.session_state.outbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
 
     # Create subplots
     fig = make_subplots(rows=2, cols=1, specs=[[{'type':'domain'}], [{'type':'domain'}]])
@@ -126,9 +118,10 @@ def pieCharts():
     fig.update_layout(
         height=600,
         width=400,
-        plot_bgcolor='#263238',
         margin=dict(t=0, b=0, l=0, r=0),
-        font=dict(color='white')
+        font=dict(color='white'),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
     )
 
     st.plotly_chart(fig)
@@ -155,30 +148,40 @@ def total_sales_chart():
     # Update the layout
     fig.update_layout(
         title={
-            'text': 'Cumulative Sales Over Time (Weekly)',
+            'text': 'Total Sales Over Time (Weekly)',
             'font': {'color': 'black'}  # Set the title color to black
         },
-        xaxis_title='Week',
-        yaxis_title='Cumulative Sales ($)',
         paper_bgcolor='#ffffff', 
-        plot_bgcolor='#ffffff',
+        plot_bgcolor='#f0f2f6',
         font=dict(color='black'),
+        margin=dict(
+            l=100,
+            r=50,
+            b=50,
+            t=100,
+        ),
         xaxis=dict(
+            title='Week',  # X-axis title
+            title_font=dict(color='black'),  # X-axis title color
+            tickfont=dict(color='black'),  # X-axis label color
             showgrid=True,
             gridcolor='#444',
-            color='black'
+            color='white'
         ),
         yaxis=dict(
+            title='Cumulative Sales ($)',  # Y-axis title
+            title_font=dict(color='black'),  # Y-axis title color
+            tickfont=dict(color='black'),  # Y-axis label color
             showgrid=True,
             gridcolor='#444',
-            color='black'
-        )
+            color='white'
+        ),
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 
-def sales_trends_chart():
+def bank_trends_chart():
     bank_df = df['bank']
     bank_df['document_id'] = bank_df['document_id'].astype(str)
     user_data = bank_df[(bank_df['document_id'] == current_id) & (bank_df['type'].isin(['pix_in', 'pix_out']))]
@@ -193,29 +196,89 @@ def sales_trends_chart():
     fig = go.Figure(data=go.Scatter(x=weekly_transactions['date_time'], y=weekly_transactions['value'], mode='lines+markers'))
 
     fig.update_layout(
-        title='Net Bank Trends Over Time (Weekly)',
-        xaxis_title='Date',
-        yaxis_title='Net Money ($)',
-        paper_bgcolor='#262730',
-        plot_bgcolor='#262730',
+        title={
+            'text': 'Bank Expenses Over Time (Weekly)',
+            'font': {'color': 'black'}  # Set the title color to black
+        },
+        paper_bgcolor='#ffffff', 
+        plot_bgcolor='#f0f2f6',
         font=dict(color='white'),
+        margin=dict(
+            l=100,
+            r=50,
+            b=50,
+            t=100,
+        ),
         xaxis=dict(
+            title='Week',  # X-axis title
+            title_font=dict(color='black'),
+            tickfont=dict(color='black'),
             showgrid=True,
             gridcolor='#444',
             color='white'
         ),
         yaxis=dict(
+            title='Net Money ($)',  # Y-axis title
+            title_font=dict(color='black'),  # Y-axis title color
+            tickfont=dict(color='black'),  # Y-axis label color
             showgrid=True,
             gridcolor='#444',
             color='white'
-        )
+        ),
     )
 
 
     st.plotly_chart(fig, use_container_width=True)
 
+#First Row of Data    
+colHeader = st.columns((1, 1, 1, 1), gap='small')
 
+with colHeader[0]:
+    st.markdown(
+        f"""
+        <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+            <p style="color: black; font-size: 16px; margin-bottom: 4px;">Income</p>
+            <p style="color: green; font-size: 32px; font-weight: bold;">${st.session_state.inbound_total:,.2f}</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
 
+with colHeader[1]:
+    st.markdown(
+        f"""
+        <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+            <p style="color: black; font-size: 16px; margin-bottom: 4px;">Expenses</p>
+            <p style="color: red; font-size: 32px; font-weight: bold;">${st.session_state.outbound_total:,.2f}</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+
+with colHeader[2]:
+    net_value = st.session_state.inbound_total - st.session_state.outbound_total
+    net_color = "green" if net_value >= 0 else "red"
+    st.markdown(
+        f"""
+        <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+            <p style="color: black; font-size: 16px; margin-bottom: 4px;">Net Total</p>
+            <p style="color: {net_color}; font-size: 32px; font-weight: bold;">${net_value:,.2f}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with colHeader[3]:
+    st.markdown(
+        """
+        <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+            <p style="color: white; font-size: 16px; margin-bottom: 4px;">ToDo2</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+        
 
 col = st.columns((1, 1), gap='large')
 
@@ -229,6 +292,6 @@ with col[0]:
 with col[1]:
     # st.markdown('#### Total Population')
     st.markdown('#')
-    sales_trends_chart()
+    bank_trends_chart()
     st.markdown('#')
     total_sales_chart()
