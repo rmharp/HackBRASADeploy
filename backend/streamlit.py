@@ -24,6 +24,8 @@ if 'inbound_total' not in st.session_state:
     st.session_state.inbound_total = 0
 if 'outbound_total' not in st.session_state:
     st.session_state.outbound_total = 0
+if 'number_of_sales' not in st.session_state:
+    st.session_state.number_of_sales = 0
 
 st.markdown("<h1 style='text-align: center; color: black;'>Business Dashboard</h1>", unsafe_allow_html=True)
 
@@ -158,6 +160,8 @@ def total_sales_chart():
     sales_data['date_time'] = pd.to_datetime(sales_data['date_time'])
     filtered_sales = sales_data[(sales_data['date_time'] >= pd.to_datetime(start_date)) & 
                                 (sales_data['date_time'] <= pd.to_datetime(end_date))]
+    
+    st.session_state.number_of_sales = len(filtered_sales)
 
     # Aggregate sales values by week and calculate cumulative sales
     sales_over_time = filtered_sales.set_index('date_time').resample('W')['value'].sum().reset_index()
@@ -292,9 +296,10 @@ with colHeader[2]:
 
 with colHeader[3]:
     st.markdown(
-        """
+        f"""
         <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-            <p style="color: white; font-size: 16px; margin-bottom: 4px;">ToDo2</p>
+            <p style="color: black; font-size: 16px; margin-bottom: 4px;">Number of Sales</p>
+            <p style="color: green; font-size: 32px; font-weight: bold;">{st.session_state.number_of_sales}</p>
         </div>
         """,
         unsafe_allow_html=True
