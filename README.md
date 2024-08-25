@@ -13,6 +13,6 @@ Riley Harper - Riley.harper@unc.edu <br>
 Kensho Pilkey - kpilkey@unc.edu <br>
 Michael Puglise - michael.puglise@duke.edu<br>
 
-## Acknowledgments
+## Reconhecimentos
 - Hack BRASA 2024
 - Stone Co. Desafio
