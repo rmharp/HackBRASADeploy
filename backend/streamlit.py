@@ -15,16 +15,16 @@ with st.sidebar:
 
     start_date = st.date_input(
         'Start date',
-        min_value=datetime(2022, 1, 1),
-        max_value=datetime.now(),
-        value=datetime(2022, 1, 1)
+        min_value=datetime(2022, 12, 1),
+        max_value=datetime(2023, 5, 31),
+        value=datetime(2022, 12, 1)
     )
 
     end_date = st.date_input(
         'End date',
         min_value=start_date,
-        max_value=datetime.now(),
-        value=datetime.now()
+        max_value=datetime(2023, 5, 31),
+        value=datetime(2023, 5, 31)
     )
 
     # Display the selected date interval
