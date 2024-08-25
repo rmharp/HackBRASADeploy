@@ -5,13 +5,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
 
-<<<<<<< Updated upstream
-st.title('Insert Title Here')
-=======
-### to run streamlit app `streamlit run backend/streamlit.py`
 
-st.title('Banking Data Analysis')
->>>>>>> Stashed changes
+st.set_page_config(layout="wide")
+st.markdown("<h1 style='text-align: center; color: white;'>Insert Title Here</h1>", unsafe_allow_html=True)
 
 # Sidebar setup
 with st.sidebar:
@@ -19,9 +15,9 @@ with st.sidebar:
 
     start_date = st.date_input(
         'Start date',
-        min_value=datetime(1900, 1, 1),
+        min_value=datetime(2022, 1, 1),
         max_value=datetime.now(),
-        value=datetime(2020, 1, 1)
+        value=datetime(2022, 1, 1)
     )
 
     end_date = st.date_input(
@@ -37,7 +33,7 @@ with st.sidebar:
     # Input for Client ID
     current_id = st.text_input('Enter Client ID:', value='6347736874608223396')
 
-# Cache the data loading function
+# loading function
 @st.cache_data
 def load_data():
     data = {
@@ -61,6 +57,9 @@ def pieCharts():
     bank_df['document_id'] = bank_df['document_id'].astype(str)
     user_data = bank_df[bank_df['document_id'] == current_id]
 
+    user_data['date_time'] = pd.to_datetime(user_data['date_time'])
+    user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & (user_data['date_time'] <= pd.to_datetime(end_date))]
+
     # Calculate inbound and outbound totals
     inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
     outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
@@ -68,6 +67,7 @@ def pieCharts():
     # Display inbound and outbound totals
     st.metric(label="Profit", value=f"${inbound_total:,.2f}")
     st.metric(label="Expenditure", value=f"${outbound_total:,.2f}")
+    st.markdown('#')
 
     # Calculate percentages
     total_spending = inbound_total + outbound_total
@@ -108,8 +108,7 @@ def pieCharts():
     # Update layout
     fig.update_layout(
         height=600,
-        width=300,
-        paper_bgcolor='#263238',
+        width=400,
         plot_bgcolor='#263238',
         margin=dict(t=0, b=0, l=0, r=0),
         font=dict(color='white')
@@ -141,12 +140,19 @@ def sales_trends_chart():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-col = st.columns((0.4, 0.6), gap='medium')
+
+
+
+col = st.columns((1, 1), gap='large')
 
 with col[0]:
-    st.markdown('#### Gains/Losses')
-    pieCharts()
+    col2 = st.columns((0.6, 0.4), gap='medium')
+    with st.container():
+        with col2[0]:
+            st.markdown('#### Gains/Losses')
+            pieCharts()
 
 with col[1]:
-    st.markdown('#### Total Population')
+    # st.markdown('#### Total Population')
+    st.markdown('#')
     sales_trends_chart()
