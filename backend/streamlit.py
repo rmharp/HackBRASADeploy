@@ -16,7 +16,6 @@ load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-<<<<<<< Updated upstream
 st.set_page_config(layout="wide")
 
 #global vars
@@ -39,11 +38,7 @@ st.markdown(
         """,
         unsafe_allow_html=True
 )
-=======
 ### to run streamlit app `streamlit run backend/streamlit.py`
-
-st.title(f'Banking Data Analysis')
->>>>>>> Stashed changes
 
 # Sidebar setup
 with st.sidebar:
@@ -102,18 +97,17 @@ def pieCharts():
     st.session_state.inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
     st.session_state.outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
 
-
     # Calculate percentages
     total_spending = st.session_state.inbound_total + st.session_state.outbound_total
     inbound_percent = round((st.session_state.inbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
     outbound_percent = round((st.session_state.outbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
 
-    # Create subplots
-    fig = make_subplots(rows=2, cols=1, specs=[[{'type':'domain'}], [{'type':'domain'}]])
+    # Create subplots with 1 row and 2 columns
+    fig = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
 
     # Add traces for inbound
     fig.add_trace(go.Pie(
-        values=[inbound_percent, 100-inbound_percent],
+        values=[inbound_percent, 100 - inbound_percent],
         labels=['', ''],
         hole=.7,
         marker_colors=['#4CAF50', '#ffffff'],
@@ -124,24 +118,25 @@ def pieCharts():
 
     # Add traces for outbound
     fig.add_trace(go.Pie(
-        values=[outbound_percent, 100-outbound_percent],
+        values=[outbound_percent, 100 - outbound_percent],
         labels=['', ''],
         hole=.7,
         marker_colors=['#FF5252', '#ffffff'],
         textinfo='none',
         hoverinfo='none',
         showlegend=False
-    ), 2, 1)
+    ), 1, 2)
 
-    fig.add_annotation(x=0.5, y=0.78, text="Inbound", showarrow=False)
-    fig.add_annotation(x=0.5, y=0.83, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
-    fig.add_annotation(x=0.5, y=0.15, text="Outbound", showarrow=False)
-    fig.add_annotation(x=0.5, y=0.18, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False)
+    # Add annotations for the pie charts
+    fig.add_annotation(x=0.18, y=0.5, text="Inbound", showarrow=False, font=dict(color="white"))
+    fig.add_annotation(x=0.18, y=0.4, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
+    fig.add_annotation(x=0.82, y=0.5, text="Outbound", showarrow=False, font=dict(color="white"))
+    fig.add_annotation(x=0.82, y=0.4, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False)
 
     # Update layout
     fig.update_layout(
-        height=600,
-        width=400,
+        height=300,
+        width=800,
         margin=dict(t=0, b=0, l=0, r=0),
         font=dict(color='white'),
         paper_bgcolor='rgba(0,0,0,0)',
@@ -310,22 +305,19 @@ with colHeader[3]:
 col = st.columns((1, 1), gap='large')
 
 with col[0]:
-    col2 = st.columns((0.6, 0.4), gap='medium')
     with st.container():
-        with col2[0]:
-            st.markdown('#### Gains/Losses')
-            pieCharts()
+        st.markdown(
+            """
+            <h4 style='color: black;'>Gains/Losses</h4>
+            """,
+            unsafe_allow_html=True
+        )
+        pieCharts()
 
 with col[1]:
-<<<<<<< Updated upstream
-    # st.markdown('#### Total Population')
-    st.markdown('#')
+    st.markdown('##')
     bank_trends_chart()
-    st.markdown('#')
     total_sales_chart()
-=======
-    st.markdown('#### Total Population')
-    sales_trends_chart()
 
 def openai_prompting(prompt):
     global newprompt
@@ -482,4 +474,3 @@ prompt = st.text_area(label="")  # Adding a label argument
 
 if st.button("Run AI Analysis"):
     promptrun(prompt)
->>>>>>> Stashed changes
