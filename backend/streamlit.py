@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
 
-st.title('Banking Data Analysis')
+st.title('Insert Title Here')
 
 # Sidebar setup
 with st.sidebar:
@@ -112,6 +112,29 @@ def pieCharts():
     # Show figure
     st.plotly_chart(fig)
 
+def sales_trends_chart():
+    # Filter bank data for the specific client ID
+    bank_df = df['bank']
+    bank_df['document_id'] = bank_df['document_id'].astype(str)
+    user_data = bank_df[(bank_df['document_id'] == current_id) & (bank_df['type'] == 'pix_in')]
+
+    user_data['date_time'] = pd.to_datetime(user_data['date_time'])
+    user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & (user_data['date_time'] <= pd.to_datetime(end_date))]
+    daily_incoming = user_data.groupby('date_time')['value'].sum().reset_index()
+
+    # Create line chart
+    fig = go.Figure(data=go.Scatter(x=daily_incoming['date_time'], y=daily_incoming['value'], mode='lines+markers'))
+
+    fig.update_layout(
+        title='Sales Trends Over Time',
+        xaxis_title='Date',
+        yaxis_title='Total Incoming Money',
+        paper_bgcolor='#263238',
+        plot_bgcolor='#263238',
+        font=dict(color='white')
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
 col = st.columns((0.4, 0.6), gap='medium')
 
 with col[0]:
@@ -120,3 +143,4 @@ with col[0]:
 
 with col[1]:
     st.markdown('#### Total Population')
+    sales_trends_chart()
