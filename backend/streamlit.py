@@ -27,6 +27,14 @@ def login(username, password):
     else:
         st.error("Incorrect username or password")
 
+# Define the login page
+def login_page():
+    st.markdown("<h1 style='text-align: center; color: black;'>Login Page</h1>", unsafe_allow_html=True)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        login(username, password)
+
 # Define the main dashboard content
 def dashboard_page():
     #global vars
