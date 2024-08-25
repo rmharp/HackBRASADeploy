@@ -190,10 +190,8 @@ def main():
             ), 1, 2)
         
             # Add annotations for the pie charts
-            fig.add_annotation(x=0.18, y=0.5, text="Inbound", showarrow=False, font=dict(color="white"))
-            fig.add_annotation(x=0.18, y=0.4, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
-            fig.add_annotation(x=0.82, y=0.5, text="Outbound", showarrow=False, font=dict(color="white"))
-            fig.add_annotation(x=0.82, y=0.4, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False)
+            fig.add_annotation(x=0.15, y=0.5, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
+            fig.add_annotation(x=0.87, y=0.5, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False)
         
             # Update layout
             fig.update_layout(
@@ -312,6 +310,16 @@ def main():
         
         
             st.plotly_chart(fig, use_container_width=True)
+
+        def top_industries():
+            sales_df = df['sales']
+            sales_df['document_id'] = sales_df['document_id'].astype(str)
+            sales_data = sales_df[(sales_df['document_id'] == current_id)]
+        
+            # Convert date_time to datetime and filter by date range
+            sales_data['date_time'] = pd.to_datetime(sales_data['date_time'])
+            filtered_sales = sales_data[(sales_data['date_time'] >= pd.to_datetime(start_date)) & 
+                                        (sales_data['date_time'] <= pd.to_datetime(end_date))]
         
         #First Row of Data    
         colHeader = st.columns((1, 1, 1, 1), gap='small')
