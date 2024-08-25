@@ -4,7 +4,19 @@ import gdown
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
+import plotly.graph_objects as go
+import openai
+import requests
+import os
+import sys
+import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
+load_dotenv()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+<<<<<<< Updated upstream
 st.set_page_config(layout="wide")
 
 #global vars
@@ -25,6 +37,11 @@ st.markdown(
         """,
         unsafe_allow_html=True
 )
+=======
+### to run streamlit app `streamlit run backend/streamlit.py`
+
+st.title(f'Banking Data Analysis')
+>>>>>>> Stashed changes
 
 # Sidebar setup
 with st.sidebar:
@@ -61,6 +78,11 @@ def load_data():
         gdown.download(f'https://drive.google.com/uc?id={file_id}', name + '.parquet', quiet=False)
         df[name] = pd.read_parquet(name + '.parquet')
 
+    # Preprocess the sales data
+    df['sales']['date_time'] = pd.to_datetime(df['sales']['date_time'])  # Convert to datetime
+    df['sales']['day_of_week'] = df['sales']['date_time'].dt.day_name()  # Extract day of the week
+    df['sales']['hour'] = df['sales']['date_time'].dt.hour              # Extract hour of the day
+    
     return df
 
 df = load_data()
@@ -290,8 +312,169 @@ with col[0]:
             pieCharts()
 
 with col[1]:
+<<<<<<< Updated upstream
     # st.markdown('#### Total Population')
     st.markdown('#')
     bank_trends_chart()
     st.markdown('#')
     total_sales_chart()
+=======
+    st.markdown('#### Total Population')
+    sales_trends_chart()
+
+def openai_prompting(prompt):
+    global newprompt
+    global output
+    global total_tokens_used
+    global cost
+    print("\n\nRunning GPT-3.5")
+
+    # Define the endpoint URL
+    url = "https://api.openai.com/v1/chat/completions"
+
+    # Set up the request headers with your API key
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {openai.api_key}"
+    }
+
+    # Define the request payload (input text and parameters)
+    data = {
+        "model": "gpt-3.5-turbo",  # choose the model
+        "messages": [{
+                "role": "system",
+                "content": (
+                "Você é um cientista de dados com o objetivo de analisar dados em resposta a solicitações do usuário e retornar código e texto exclusivamente em português."
+                " Os dados são armazenados em df['sales'], contendo informações sobre vendas, e já foram pré-processados, resultando em df['sales'].shape de (264933, 7), com as colunas: ['document_id', 'date_time', 'value', 'card_number', 'type', 'mcc', 'state'], "
+                " e os tipos de dados: [dtype('int64'), dtype('<M8[us]'), dtype('float64'), dtype('O'), dtype('O'), dtype(' int64 '), dtype('O')]. Por favor, retorne apenas código Python executável para consultar os dados e responder à solicitação do usuário, e nada mais."
+                " Você pode usar numpy, pandas ou plots para completar a tarefa conforme a solicitação do usuário. Anexei a primeira linha de dados como exemplo. O código deve fornecer a resposta ao usuário"
+                " na forma mais simples possível, como um número inteiro acompanhado por um símbolo $. Além disso, quando um gráfico for solicitado, certifique-se de que o gráfico seja exibido com os eixos ajustados adequadamente. Certifique-se de usar os dados armazenados em df['sales']. Lembre-se que todo texto utilizado em gráficos deverá estar somente em português."
+            )
+            },
+            {"role": "user", "content": f"{prompt}"}],  # prompt here
+        "max_tokens": 800  # maximum number of tokens for the model
+    }
+    if prompt != "":
+        newprompt = prompt
+        response = requests.post(url, json=data, headers=headers)
+    else:
+        print("You have an empty prompt, so printing the previous prompt again or default if first prompt is empty.\n")
+        print(f"Prompt: {newprompt}")
+        print(f"\nOutput: {output}")
+        print("\nTokens Used: " + str(total_tokens_used))
+        print("Cost: $" + format(cost, ".8f").rstrip("0").rstrip("."))
+        return
+
+    # Check if request was successful (status code 200)
+    if response.status_code == 200:
+        # Parse response to get the text and number of tokens
+        output = response.json()['choices'][0]['message']['content']
+        output = output.strip().replace("\n\n", "\n")
+        prompt_tokens_used = response.json()['usage']['prompt_tokens']
+        completion_tokens_used = response.json()['usage']['completion_tokens']
+        total_tokens_used = response.json()['usage']['total_tokens']
+        
+        # Pricing based on gpt-3.5-turbo
+        cost_per_input_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for inputs
+        cost_per_output_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for outputs
+        cost = prompt_tokens_used * cost_per_input_token + completion_tokens_used * cost_per_output_token
+
+        # Print the completion text, tokens used, and cost
+        print(f"Prompt: {newprompt}")
+        print(f"\nOutput: {output}")
+        print("\nTokens Used: " + str(total_tokens_used))
+        print("Cost: $" + format(cost, ".8f").rstrip("0").rstrip("."))
+        return output
+    else:
+        # Print error message if request was not successful
+        print("Error:", response.text)
+
+def promptrun(prompt):
+    global output  # Ensure that output is accessible here
+    
+    # Initialize global variables
+    newprompt = ""
+    output = ""
+    total_tokens_used = 0
+    cost = 0.0
+
+    # Define the user query
+    user_query = prompt
+
+    # Extract the first five rows of df['sales'] as an example to include in the prompt
+    sample_data = df['sales'].head(1).to_string(index=False)
+
+    # Ask the model to generate a prompt that includes the user query and lets it know about the data
+    generation_prompt = f"""
+    Given the following user query:
+
+    {user_query}
+
+    Please generate code that includes the necessary instructions to analyze the data. The data will be provided, and you can assume that the data is in a Pandas DataFrame. Below are the first five rows of the DataFrame that will be used for analysis:
+
+    {sample_data}
+
+    Please generate the code that does what is requested based on the user's query and the data provided.
+    """
+    
+    with st.spinner("Running AI Analysis..."):
+        # Send the request to OpenAI to generate the prompt
+        output = openai_prompting(prompt)
+    
+    if output:
+        # Remove unnecessary markdown formatting
+        output = output.replace("```python\n", "").replace("\n```", "")
+        
+        # Calculate the number of lines in the output to determine the height
+        num_lines = len(output.split('\n'))
+        height = min(max(num_lines * 20, 100), 400)
+        
+        # Display the generated code
+        st.text_area("Generated Code:", value=output, height=height)
+
+        # Prepare a dictionary to capture the local variables
+        local_vars = {}
+
+        # Split the output into lines and join them
+        lines = output.strip().split('\n')
+        joined_lines = "\n".join(lines)
+
+        # Debug: Print the joined lines before execution
+        print("Executing the following code:\n")
+        print(joined_lines)
+
+        # Execute the code and capture the local variables
+        try:
+            exec(joined_lines, globals(), local_vars)
+
+            # Check if plt.show() was used and if there is an active figure
+            if 'plt.show()' in joined_lines:
+                # Capture the current figure
+                fig = plt.gcf()  # Get the current figure
+                st.pyplot(fig)   # Pass the figure to st.pyplot()
+                plt.clf()        # Clear the figure after rendering
+            else:
+                # Get the last variable name and value
+                last_var_name = list(local_vars.keys())[-1]
+                last_var_value = local_vars[last_var_name]
+
+                # Format the result based on its type
+                if isinstance(last_var_value, (int, float)):
+                    formatted_result = f"\n\nResult: ${last_var_value:,.2f}"
+                    st.write(formatted_result)
+                elif isinstance(last_var_value, pd.Series):
+                    formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
+                    st.write(formatted_result)
+                else:
+                    formatted_result = str(last_var_value)
+                    st.write(formatted_result)
+        except Exception as e:
+            st.error(f"Error executing the code: {e}")
+
+# AI Input Section in Streamlit
+st.markdown("### Enter a prompt for AI analysis:")
+prompt = st.text_area(label="")  # Adding a label argument
+
+if st.button("Run AI Analysis"):
+    promptrun(prompt)
+>>>>>>> Stashed changes
