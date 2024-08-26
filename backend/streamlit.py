@@ -80,7 +80,7 @@ def login(username, password):
 
 # Define the login page
 def login_page():
-    st.markdown("<h1 style='text-align: center; color: black;'>Login Page</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Login Page</h1>", unsafe_allow_html=True)
     if not state.logged_in:
         # Display login form
         st.text_input(
@@ -169,7 +169,7 @@ def main():
             df['sales']['hour'] = df['sales']['date_time'].dt.hour              # Extract hour of the day
             
             return df
-        
+
         df = load_data()
         
         def pieCharts():
