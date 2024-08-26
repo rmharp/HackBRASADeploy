@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 import altair as alt
 import json
+import vegafusion
+from PIL import Image
 
 load_dotenv()
 
@@ -46,6 +48,16 @@ def load_sales_data():
     else:
         st.error(f"File not found: {file_path}")
         return pd.DataFrame()  # Return an empty DataFrame if the file does not exist
+
+def display_chart_image():
+    image_path = os.path.join('backend', 'data', 'chart.png')
+    
+    try:
+        # Open and display the image using PIL
+        image = Image.open(image_path)
+        st.image(image, caption="Quem Atendemos", width=None)
+    except FileNotFoundError:
+        st.error(f"File not found: {image_path}")
 
 # Initialize session state
 if 'data_loaded' not in st.session_state:
@@ -113,78 +125,28 @@ def login(username, password):
 
 # Define the login page
 def login_page():
-    st.markdown("<h1 style='text-align: center;'>Login Page</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Página de Login</h1>", unsafe_allow_html=True)
     if not state.logged_in:
         # Display login form
         st.text_input(
-            "Username (Document ID)", value=state.username, key='username_input',
+            "Nome de usuário (ID do Documento)", value=state.username, key='username_input',
             on_change=_set_state_cb, kwargs={'username': 'username_input'}
         )
         st.text_input(
-            "Password", type="password", value=state.password, key='password_input',
+            "Senha", type="password", value=state.password, key='password_input',
             on_change=_set_state_cb, kwargs={'password': 'password_input'}
         )
         
-        if st.button("Login", on_click=_set_login_cb, args=(state.username, state.password)):
+        if st.button("O Login", on_click=_set_login_cb, args=(state.username, state.password)):
             if not state.logged_in:
                 st.warning("Wrong username or password.")
         
-        generate_graph()
+        display_chart_image()
 
     else:
-        st.write(f"Welcome, {state.username}!")
-        if st.button("Logout", on_click=_reset_login_cb):
-            st.success("You have logged out successfully.")
-
-def generate_graph():
-    #grouped_df_display = grouped_df['sales'].groupby(['document_id', 'state']).size().reset_index(name='transaction_count')
-    
-    with open('backend/data/br-states.json', 'r') as file:
-        statesdata = json.load(file)
-
-    states = alt.topo_feature('backend/data/br-states.json', 'estados')  # Ensure 'objects.estados' matches TopoJSON structure
-
-    state_id_map = {
-    'RN': 'Rio Grande do Norte',
-    'SC': 'Santa Catarina',
-    'RS': 'Rio Grande do Sul',
-    'PR': 'Paraná',
-    'RJ': 'Rio de Janeiro',
-    'SP': 'São Paulo',
-    'MG': 'Minas Gerais',
-    'CE': 'Ceará',
-    'MT': 'Mato Grosso',
-    'DF': 'Distrito Federal',
-    'RR': 'Roraima',
-    'AL': 'Alagoas',
-    'GO': 'Goiás',
-    'SE': 'Sergipe',
-    'PE': 'Pernambuco',
-    'PB': 'Paraíba',
-    'BA': 'Bahia',
-    'AC': 'Acre',
-    'AM': 'Amazonas',
-    'ES': 'Espírito Santo',
-    'PA': 'Pará',
-    'PI': 'Piauí'
-    }
-    grouped_df['state_id'] = grouped_df['state']
-
-    # Create the chart
-    chart = alt.Chart(states).mark_geoshape().encode(
-        color=alt.Color('transaction_count:Q', scale=alt.Scale(scheme='blues')),
-        stroke=alt.value('#154360')
-    ).transform_lookup(
-        lookup='id',  # Use 'id' field from TopoJSON
-        from_=alt.LookupData(grouped_df, 'state', ['transaction_count'])
-    ).properties(
-        width=500,
-        height=300
-    ).project(
-        type='mercator'  # Changed to 'mercator' for a more general projection
-    )
-
-    chart
+        st.write(f"Bem-vindo, {state.username}!")
+        if st.button("Sair", on_click=_reset_login_cb):
+            st.success("Você saiu com sucesso.")
 
 # Main function
 def main():
