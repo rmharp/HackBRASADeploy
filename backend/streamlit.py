@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 import altair as alt
 import json
-import vegafusion
 
 load_dotenv()
 
@@ -143,7 +142,6 @@ def generate_graph():
     with open('backend/data/br-states.json', 'r') as file:
         statesdata = json.load(file)
 
-    alt.data_transformers.enable("vegafusion")
     states = alt.topo_feature('backend/data/br-states.json', 'estados')  # Ensure 'objects.estados' matches TopoJSON structure
 
     state_id_map = {
@@ -239,7 +237,7 @@ def main():
                 value=datetime(2023, 5, 31)
             )
             color_themes = {
-                "Padrão": {"primary": "#4CAF50", "secondary": "green", "background": "#f0f2f6", "text": "black"},
+                "Original": {"primary": "#4CAF50", "secondary": "green", "background": "#f0f2f6", "text": "black"},
                 "Crocodilo": {"primary": "#588157", "secondary": "#a3b18a", "background": "#dad7cd", "text": "#344e41"},
                 "Oceano": {"primary": "#48cae4", "secondary": "#00b4d8", "background": "#caf0f8", "text": "#03045e"},
                 "Pôr do sol": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#f7d8b2", "text": "#370617"},
