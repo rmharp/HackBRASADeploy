@@ -131,7 +131,7 @@ def main():
         )
         ### to run streamlit app `streamlit run backend/streamlit.py`
         
-        # Sidebar setup
+
         with st.sidebar:
             st.title('📅 Select Time Interval')
         
@@ -147,6 +147,17 @@ def main():
                 min_value=start_date,
                 max_value=datetime(2023, 5, 31),
                 value=datetime(2023, 5, 31)
+            )
+            color_themes = {
+                "Default": {"primary": "#4CAF50", "secondary": "#FF5252", "background": "#f0f2f6", "text": "black"},
+                "Pastel": {"primary": "#cdb4db", "secondary": "#ffafcc", "background": "#bde0fe", "text": "#000000"},
+                "Ocean": {"primary": "#48cae4", "secondary": "#00b4d8", "background": "#caf0f8", "text": "#03045e"},
+                "Sunset": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#ffd6a5", "text": "#370617"},
+            }
+            selected_theme = st.selectbox(
+                "Select Color Theme",
+                options=list(color_themes.keys()),
+                index=0
             )
         
         # loading function
@@ -256,7 +267,7 @@ def main():
             sales_over_time['Cumulative Sales'] = sales_over_time['Total Sales'].cumsum()
         
             # Create the Plotly figure with cumulative sales data
-            fig = go.Figure(data=go.Scatter(x=sales_over_time['Week'], y=sales_over_time['Cumulative Sales'], mode='lines+markers'))
+            fig = go.Figure(data=go.Scatter(x=sales_over_time['Week'], y=sales_over_time['Cumulative Sales'], mode='lines+markers', marker=dict(color= color_themes[selected_theme]['secondary']),))
         
             # Update the layout
             fig.update_layout(
@@ -316,7 +327,7 @@ def main():
             user_data['value'] = user_data.apply(lambda x: x['value'] if x['type'] == 'pix_in' else -x['value'], axis=1)
             weekly_transactions = user_data.set_index('date_time').resample('W')['value'].sum().reset_index()
         
-            fig = go.Figure(data=go.Scatter(x=weekly_transactions['date_time'], y=weekly_transactions['value'], mode='lines+markers'))
+            fig = go.Figure(data=go.Scatter(x=weekly_transactions['date_time'], y=weekly_transactions['value'], mode='lines+markers', marker=dict(color= color_themes[selected_theme]['secondary'])))
         
             fig.update_layout(
                 title={
@@ -326,7 +337,7 @@ def main():
                     'xanchor': 'center'
                 },
                 paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='#f0f2f6',
+                plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='white'),
                 margin=dict(
                     l=100,
@@ -390,7 +401,7 @@ def main():
                 data=[go.Bar(
                     x=industry_counts.index,
                     y=industry_counts.values,
-                    marker=dict(color='green'),
+                    marker=dict(color= color_themes[selected_theme]['secondary']),
                     width=0.3
                 )]
             )
@@ -398,7 +409,7 @@ def main():
             # Update the layout for aesthetics
             fig.update_layout(
                 title={
-                    'font': {'color': 'black'},
+                    'font': {'color': color_themes[selected_theme]['text']},
                     'text': 'Principais Indústrias',
                     'x': 0.55,
                     'xanchor': 'center'
@@ -424,7 +435,30 @@ def main():
             # Display the bar chart in Streamlit
             st.plotly_chart(fig, use_container_width=True)
 
-        
+        def apply_theme(theme_name):
+            theme = color_themes[theme_name]
+            st.markdown(f"""
+                <style>
+                .stApp {{
+                    background-color: {theme['background']};
+                }}
+                .stSidebar {{
+                    background-color: {theme['background']};
+                }}
+                .stButton>button {{
+                    color: {theme['text']};
+                    background-color: {theme['primary']};
+                    border-color: {theme['primary']};
+                }}
+                .stTextInput>div>div>input {{
+                    color: {theme['text']};
+                }}
+                h3 {{
+                    color: {theme['text']} !important;
+                }}
+                </style>
+            """, unsafe_allow_html=True)
+
         #First Row of Data    
         colHeader = st.columns((1, 1, 1, 1), gap='small')
         
@@ -474,8 +508,8 @@ def main():
                 unsafe_allow_html=True
             )
         
-                
-        
+        apply_theme(selected_theme)
+
         col = st.columns((1, 1), gap='large')
         
         with col[0]:
