@@ -133,29 +133,29 @@ def main():
         
 
         with st.sidebar:
-            st.title('📅 Select Time Interval')
+            st.title('📅 Selecione o intervalo de tempo')
         
             start_date = st.date_input(
-                'Start date',
+                'Data de início',
                 min_value=datetime(2022, 12, 1),
                 max_value=datetime(2023, 5, 31),
                 value=datetime(2022, 12, 1)
             )
         
             end_date = st.date_input(
-                'End date',
+                'Data de término',
                 min_value=start_date,
                 max_value=datetime(2023, 5, 31),
                 value=datetime(2023, 5, 31)
             )
             color_themes = {
-                "Default": {"primary": "#4CAF50", "secondary": "#FF5252", "background": "#f0f2f6", "text": "black"},
+                "Padrão": {"primary": "#4CAF50", "secondary": "green", "background": "#f0f2f6", "text": "black"},
                 "Pastel": {"primary": "#cdb4db", "secondary": "#ffafcc", "background": "#bde0fe", "text": "#000000"},
-                "Ocean": {"primary": "#48cae4", "secondary": "#00b4d8", "background": "#caf0f8", "text": "#03045e"},
-                "Sunset": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#ffd6a5", "text": "#370617"},
+                "Oceano": {"primary": "#48cae4", "secondary": "#00b4d8", "background": "#caf0f8", "text": "#03045e"},
+                "Pôr do sol": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#ffd6a5", "text": "#370617"},
             }
             selected_theme = st.selectbox(
-                "Select Color Theme",
+                "Selecione o tema de cores",
                 options=list(color_themes.keys()),
                 index=0
             )
@@ -233,7 +233,7 @@ def main():
             # Update layout
             fig.update_layout(
                 title= {
-                    'font': {'color': 'black'},
+                    'font': {'color': color_themes[selected_theme]['text']},
                     'text':'Ganhos/Perdas',
                     'x': 0.55,
                     'xanchor': 'center'
@@ -273,7 +273,7 @@ def main():
             fig.update_layout(
                 title={
                     'text': 'Vendas Totais ao Longo do Tempo (Semanalmente)',
-                    'font': {'color': 'black'},
+                    'font': {'color': color_themes[selected_theme]['text']},
                     'x': 0.5,
                     'xanchor': 'center'
                 },
@@ -287,7 +287,7 @@ def main():
                     t=100,
                 ),
                 xaxis=dict(
-                    title='Week',  # X-axis title
+                    title='Semana',  # X-axis title
                     title_font=dict(color='black'),  # X-axis title color
                     tickfont=dict(color='black'),  # X-axis label color
                     showgrid=True,
@@ -295,7 +295,7 @@ def main():
                     color='white'
                 ),
                 yaxis=dict(
-                    title='Cumulative Sales ($)',  # Y-axis title
+                    title='Vendas Cumulativas ($)',  # Y-axis title
                     title_font=dict(color='black'),  # Y-axis title color
                     tickfont=dict(color='black'),  # Y-axis label color
                     showgrid=True,
@@ -332,7 +332,7 @@ def main():
             fig.update_layout(
                 title={
                     'text': 'Despesas Bancárias ao Longo do Tempo (Semanalmente)',
-                    'font': {'color': 'black'},  # Set the title color to black
+                    'font': {'color': color_themes[selected_theme]['text']},
                     'x': 0.5,  # Center the title horizontally
                     'xanchor': 'center'
                 },
@@ -346,7 +346,7 @@ def main():
                     t=100,
                 ),
                 xaxis=dict(
-                    title='Week',  # X-axis title
+                    title='Semana', 
                     title_font=dict(color='black'),
                     tickfont=dict(color='black'),
                     showgrid=True,
@@ -354,7 +354,7 @@ def main():
                     color='white'
                 ),
                 yaxis=dict(
-                    title='Net Money ($)',  # Y-axis title
+                    title='Dinheiro líquido ($)',  # Y-axis title
                     title_font=dict(color='black'),  # Y-axis title color
                     tickfont=dict(color='black'),  # Y-axis label color
                     showgrid=True,
@@ -414,10 +414,22 @@ def main():
                     'x': 0.55,
                     'xanchor': 'center'
                 },
-                xaxis_title='Industry',
-                yaxis_title='Count',
-                xaxis=dict(tickfont=dict(color='black')),
-                yaxis=dict(tickfont=dict(color='black')),
+                xaxis=dict(
+                    title='Indústria',
+                    title_font=dict(color='black'),
+                    tickfont=dict(color='black'),
+                    showgrid=True,
+                    gridcolor='#444',
+                    color='white'
+                ),
+                yaxis=dict(
+                    title='Número',
+                    title_font=dict(color='black'),
+                    tickfont=dict(color='black'),
+                    showgrid=True,
+                    gridcolor='#444',
+                    color='white'
+                ),
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='black'),
@@ -453,8 +465,8 @@ def main():
                 .stTextInput>div>div>input {{
                     color: {theme['text']};
                 }}
-                h3 {{
-                    color: {theme['text']} !important;
+                h3, h1 {{
+                    color: {theme['primary']} !important;
                 }}
                 </style>
             """, unsafe_allow_html=True)
