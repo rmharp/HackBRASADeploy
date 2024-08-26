@@ -240,9 +240,9 @@ def main():
             )
             color_themes = {
                 "Padrão": {"primary": "#4CAF50", "secondary": "green", "background": "#f0f2f6", "text": "black"},
-                "Pastel": {"primary": "#cdb4db", "secondary": "#ffafcc", "background": "#bde0fe", "text": "#000000"},
+                "Crocodilo": {"primary": "#588157", "secondary": "#a3b18a", "background": "#dad7cd", "text": "#344e41"},
                 "Oceano": {"primary": "#48cae4", "secondary": "#00b4d8", "background": "#caf0f8", "text": "#03045e"},
-                "Pôr do sol": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#ffd6a5", "text": "#370617"},
+                "Pôr do sol": {"primary": "#ffb703", "secondary": "#fb8500", "background": "#f7d8b2", "text": "#370617"},
             }
             selected_theme = st.selectbox(
                 "Selecione o tema de cores",
@@ -299,7 +299,7 @@ def main():
             # Create subplots with 1 row and 2 columns
             fig = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
         
-            # Add traces for inbound
+            # Add traces for outbound
             fig.add_trace(go.Pie(
                 values=[inbound_percent, 100 - inbound_percent],
                 labels=['', ''],
@@ -307,9 +307,10 @@ def main():
                 marker_colors=['#4CAF50', '#ffffff'],
                 textinfo='none',
                 hoverinfo='none',
-                showlegend=False
+                showlegend=False,
+                domain={'x': [0, 0.5], 'y': [0, 1]}  # Specify domain for the first pie chart
             ), 1, 1)
-        
+
             # Add traces for outbound
             fig.add_trace(go.Pie(
                 values=[outbound_percent, 100 - outbound_percent],
@@ -318,19 +319,20 @@ def main():
                 marker_colors=['#FF5252', '#ffffff'],
                 textinfo='none',
                 hoverinfo='none',
-                showlegend=False
+                showlegend=False,
+                domain={'x': [0.5, 1], 'y': [0, 1]}  # Specify domain for the second pie chart
             ), 1, 2)
-        
+
             # Add annotations for the pie charts
-            fig.add_annotation(x=0.15, y=0.5, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False)
-            fig.add_annotation(x=0.87, y=0.5, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False)
-        
+            fig.add_annotation(x=0.15, y=0.5, text=f"{inbound_percent}%", font=dict(size=24, color='#4CAF50'), showarrow=False, xref="paper", yref="paper")
+            fig.add_annotation(x=0.85, y=0.5, text=f"{outbound_percent}%", font=dict(size=24, color='#FF5252'), showarrow=False, xref="paper", yref="paper")
+
             # Update layout
             fig.update_layout(
                 title= {
                     'font': {'color': color_themes[selected_theme]['text']},
                     'text':'Ganhos/Perdas',
-                    'x': 0.55,
+                    'x': 0.5,
                     'xanchor': 'center'
                 },
                 height=300,
@@ -340,8 +342,8 @@ def main():
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
             )
-        
-            st.plotly_chart(fig)
+
+            st.plotly_chart(fig, use_container_width=True)
         
         def total_sales_chart():
             # Filter sales data for the specific client ID
@@ -604,6 +606,7 @@ def main():
             
             #First Row of Data    
             colHeader = st.columns((1, 1, 1, 1), gap='small')
+            apply_theme(selected_theme)
 
             with colHeader[0]:
                 st.markdown(
