@@ -117,7 +117,7 @@ def main():
         if 'number_of_sales' not in st.session_state:
             st.session_state.number_of_sales = 0
         
-        st.markdown("<h1 style='text-align: center; color: black;'>Business Dashboard</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: black;'>Painel de negócios</h1>", unsafe_allow_html=True)
         
         st.markdown(
                 """
@@ -221,9 +221,15 @@ def main():
         
             # Update layout
             fig.update_layout(
+                title= {
+                    'font': {'color': 'black'},
+                    'text':'Ganhos/Perdas',
+                    'x': 0.55,
+                    'xanchor': 'center'
+                },
                 height=300,
                 width=800,
-                margin=dict(t=0, b=0, l=0, r=0),
+                margin=dict(t=100, b=0, l=0, r=0),
                 font=dict(color='white'),
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
@@ -255,11 +261,13 @@ def main():
             # Update the layout
             fig.update_layout(
                 title={
-                    'text': 'Total Sales Over Time (Weekly)',
-                    'font': {'color': 'black'}  # Set the title color to black
+                    'text': 'Vendas Totais ao Longo do Tempo (Semanalmente)',
+                    'font': {'color': 'black'},
+                    'x': 0.5,
+                    'xanchor': 'center'
                 },
-                paper_bgcolor='#ffffff', 
-                plot_bgcolor='#f0f2f6',
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='black'),
                 margin=dict(
                     l=100,
@@ -283,6 +291,14 @@ def main():
                     gridcolor='#444',
                     color='white'
                 ),
+                shapes=[
+                    dict(
+                        type="rect",
+                        xref="paper", yref="paper",
+                        x0=0, y0=0, x1=1, y1=1,
+                        line=dict(color="white", width=2),
+                    )
+                ]
             )
         
             st.plotly_chart(fig, use_container_width=True)
@@ -304,10 +320,12 @@ def main():
         
             fig.update_layout(
                 title={
-                    'text': 'Bank Expenses Over Time (Weekly)',
-                    'font': {'color': 'black'}  # Set the title color to black
+                    'text': 'Despesas Bancárias ao Longo do Tempo (Semanalmente)',
+                    'font': {'color': 'black'},  # Set the title color to black
+                    'x': 0.5,  # Center the title horizontally
+                    'xanchor': 'center'
                 },
-                paper_bgcolor='#ffffff', 
+                paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='#f0f2f6',
                 font=dict(color='white'),
                 margin=dict(
@@ -332,20 +350,80 @@ def main():
                     gridcolor='#444',
                     color='white'
                 ),
+                shapes=[
+                    dict(
+                        type="rect",
+                        xref="paper", yref="paper",
+                        x0=0, y0=0, x1=1, y1=1,
+                        line=dict(color="white", width=2),
+                    )
+                ]
             )
         
         
             st.plotly_chart(fig, use_container_width=True)
 
         def top_industries():
-            sales_df = df['sales']
+            # Perform a left join of the MCC dictionary (mcc_df) into sales_df on the 'mcc' column
+            # Perform a left join of the MCC dictionary (mcc_df) into sales_df on the 'mcc' column
+            sales_df = pd.merge(df['sales'], df['mcc'], on='mcc', how='left')
+
+            # Ensure 'document_id' is a string
             sales_df['document_id'] = sales_df['document_id'].astype(str)
-            sales_data = sales_df[(sales_df['document_id'] == current_id)]
-        
-            # Convert date_time to datetime and filter by date range
+            
+            # Filter by the current ID
+            sales_data = sales_df[sales_df['document_id'] == current_id]
+            
+            # Convert 'date_time' to datetime and filter by date range
             sales_data['date_time'] = pd.to_datetime(sales_data['date_time'])
             filtered_sales = sales_data[(sales_data['date_time'] >= pd.to_datetime(start_date)) & 
                                         (sales_data['date_time'] <= pd.to_datetime(end_date))]
+            
+            # Count occurrences of each industry
+            industry_counts = filtered_sales['edited_description'].value_counts()
+            
+            # Ensure we have at most 5 industries
+            industry_counts = industry_counts.head(5)
+
+            # Create a bar chart using Plotly Graph Objects
+            fig = go.Figure(
+                data=[go.Bar(
+                    x=industry_counts.index,
+                    y=industry_counts.values,
+                    marker=dict(color='green'),
+                    width=0.3
+                )]
+            )
+
+            # Update the layout for aesthetics
+            fig.update_layout(
+                title={
+                    'font': {'color': 'black'},
+                    'text': 'Principais Indústrias',
+                    'x': 0.55,
+                    'xanchor': 'center'
+                },
+                xaxis_title='Industry',
+                yaxis_title='Count',
+                xaxis=dict(tickfont=dict(color='black')),
+                yaxis=dict(tickfont=dict(color='black')),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='black'),
+                height=610,  # Increase this value to make the chart taller
+                shapes=[
+                    dict(
+                        type="rect",
+                        xref="paper", yref="paper",
+                        x0=0, y0=0, x1=1, y1=1,
+                        line=dict(color="white", width=2),
+                    )
+                ]
+            )
+
+            # Display the bar chart in Streamlit
+            st.plotly_chart(fig, use_container_width=True)
+
         
         #First Row of Data    
         colHeader = st.columns((1, 1, 1, 1), gap='small')
@@ -354,7 +432,7 @@ def main():
             st.markdown(
                 f"""
                 <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Income</p>
+                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Renda</p>
                     <p style="color: green; font-size: 32px; font-weight: bold;">${st.session_state.inbound_total:,.2f}</p>
                 </div>
                 """, 
@@ -365,7 +443,7 @@ def main():
             st.markdown(
                 f"""
                 <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Expenses</p>
+                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Despesas</p>
                     <p style="color: red; font-size: 32px; font-weight: bold;">${st.session_state.outbound_total:,.2f}</p>
                 </div>
                 """, 
@@ -378,7 +456,7 @@ def main():
             st.markdown(
                 f"""
                 <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Net Total</p>
+                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Total líquido</p>
                     <p style="color: {net_color}; font-size: 32px; font-weight: bold;">${net_value:,.2f}</p>
                 </div>
                 """,
@@ -389,7 +467,7 @@ def main():
             st.markdown(
                 f"""
                 <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Number of Sales</p>
+                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Número de Vendas</p>
                     <p style="color: green; font-size: 32px; font-weight: bold;">{st.session_state.number_of_sales}</p>
                 </div>
                 """,
@@ -402,16 +480,10 @@ def main():
         
         with col[0]:
             with st.container():
-                st.markdown(
-                    """
-                    <h4 style='color: black;'>Gains/Losses</h4>
-                    """,
-                    unsafe_allow_html=True
-                )
                 pieCharts()
+                top_industries()
         
         with col[1]:
-            st.markdown('##')
             bank_trends_chart()
             total_sales_chart()
         
@@ -565,7 +637,7 @@ def main():
                     st.error(f"Error executing the code: {e}")
         
         # AI Input Section in Streamlit
-        st.markdown("### Enter a prompt for AI analysis:")
+        st.markdown("""<h3 style='color: black;'>Insira um Prompt Para Análise de IA:</h3>""",unsafe_allow_html=True)
         prompt = st.text_area(label="")  # Adding a label argument
         
         if st.button("Run AI Analysis"):
