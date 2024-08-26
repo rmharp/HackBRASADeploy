@@ -42,6 +42,10 @@ def load_sales_data():
         st.error(f"File not found: {file_path}")
         return pd.DataFrame()  # Return an empty DataFrame if the file does not exist
 
+# Initialize session state
+if 'data_loaded' not in st.session_state:
+    st.session_state.data_loaded = False
+
 # Load the sales data
 df_sales = load_sales_data()
 
@@ -95,6 +99,8 @@ def login_page():
         if st.button("Login", on_click=_set_login_cb, args=(state.username, state.password)):
             if not state.logged_in:
                 st.warning("Wrong username or password.")
+        
+        
     else:
         st.write(f"Welcome, {state.username}!")
         if st.button("Logout", on_click=_reset_login_cb):
@@ -116,6 +122,8 @@ def main():
             st.session_state.outbound_total = 0
         if 'number_of_sales' not in st.session_state:
             st.session_state.number_of_sales = 0
+        if 'df' not in st.session_state:
+            st.session_state.df = None
         
         st.markdown("<h1 style='text-align: center; color: black;'>Painel de negócios</h1>", unsafe_allow_html=True)
         
@@ -180,12 +188,17 @@ def main():
             df['sales']['hour'] = df['sales']['date_time'].dt.hour              # Extract hour of the day
             
             return df
-
-        df = load_data()
+        
+        if not st.session_state.data_loaded:
+            st.session_state.df = load_data()
+            st.session_state.data_loaded = True
+        
+        if 'data_loaded' not in st.session_state:
+            st.session_state.data_loaded = False
         
         def pieCharts():
             # Ensure the document_id column is treated as a string to match input
-            bank_df = df['bank']
+            bank_df = st.session_state.df['bank']
             bank_df['document_id'] = bank_df['document_id'].astype(str)
             user_data = bank_df[bank_df['document_id'] == current_id]
         
@@ -250,7 +263,7 @@ def main():
         
         def total_sales_chart():
             # Filter sales data for the specific client ID
-            sales_df = df['sales']
+            sales_df = st.session_state.df['sales']
             sales_df['document_id'] = sales_df['document_id'].astype(str)
             sales_data = sales_df[(sales_df['document_id'] == current_id)]
         
@@ -316,7 +329,7 @@ def main():
         
         
         def bank_trends_chart():
-            bank_df = df['bank']
+            bank_df = st.session_state.df['bank']
             bank_df['document_id'] = bank_df['document_id'].astype(str)
             user_data = bank_df[(bank_df['document_id'] == current_id) & (bank_df['type'].isin(['pix_in', 'pix_out']))]
         
@@ -377,7 +390,7 @@ def main():
         def top_industries():
             # Perform a left join of the MCC dictionary (mcc_df) into sales_df on the 'mcc' column
             # Perform a left join of the MCC dictionary (mcc_df) into sales_df on the 'mcc' column
-            sales_df = pd.merge(df['sales'], df['mcc'], on='mcc', how='left')
+            sales_df = pd.merge(st.session_state.df['sales'], st.session_state.df['mcc'], on='mcc', how='left')
 
             # Ensure 'document_id' is a string
             sales_df['document_id'] = sales_df['document_id'].astype(str)
@@ -474,64 +487,99 @@ def main():
         #First Row of Data    
         colHeader = st.columns((1, 1, 1, 1), gap='small')
         
-        with colHeader[0]:
-            st.markdown(
-                f"""
-                <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Renda</p>
-                    <p style="color: green; font-size: 32px; font-weight: bold;">${st.session_state.inbound_total:,.2f}</p>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-        
-        with colHeader[1]:
-            st.markdown(
-                f"""
-                <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Despesas</p>
-                    <p style="color: red; font-size: 32px; font-weight: bold;">${st.session_state.outbound_total:,.2f}</p>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-        
-        with colHeader[2]:
+        if st.session_state.data_loaded:
+            bank_df = st.session_state.df['bank']
+            bank_df['document_id'] = bank_df['document_id'].astype(str)
+
+            # Filter data for the current user
+            user_data = bank_df[bank_df['document_id'] == st.session_state.username]
+
+            # Convert 'date_time' column to datetime if it's not already
+            user_data['date_time'] = pd.to_datetime(user_data['date_time'])
+
+            # Filter by the selected date range
+            filtered_user_data = user_data[(user_data['date_time'] >= pd.to_datetime(start_date)) & 
+                                        (user_data['date_time'] <= pd.to_datetime(end_date))]
+
+            # Calculate inbound and outbound totals based on the filtered data
+            st.session_state.inbound_total = filtered_user_data[filtered_user_data['type'] == 'pix_in']['value'].sum()
+            st.session_state.outbound_total = filtered_user_data[filtered_user_data['type'] == 'pix_out']['value'].sum()
+
+            # Update the sales count based on the date range
+            sales_df = st.session_state.df['sales']
+            sales_df['document_id'] = sales_df['document_id'].astype(str)
+
+            # Filter sales data by the selected date range and user
+            filtered_sales_data = sales_df[(sales_df['document_id'] == st.session_state.username) &
+                                        (sales_df['date_time'] >= pd.to_datetime(start_date)) &
+                                        (sales_df['date_time'] <= pd.to_datetime(end_date))]
+
+            st.session_state.number_of_sales = len(filtered_sales_data)
+
+            # Calculate net value
             net_value = st.session_state.inbound_total - st.session_state.outbound_total
             net_color = "green" if net_value >= 0 else "red"
-            st.markdown(
-                f"""
-                <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Total líquido</p>
-                    <p style="color: {net_color}; font-size: 32px; font-weight: bold;">${net_value:,.2f}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        
-        with colHeader[3]:
-            st.markdown(
-                f"""
-                <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
-                    <p style="color: black; font-size: 16px; margin-bottom: 4px;">Número de Vendas</p>
-                    <p style="color: green; font-size: 32px; font-weight: bold;">{st.session_state.number_of_sales}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        
-        apply_theme(selected_theme)
+            
+            #First Row of Data    
+            colHeader = st.columns((1, 1, 1, 1), gap='small')
 
-        col = st.columns((1, 1), gap='large')
-        
-        with col[0]:
-            with st.container():
-                pieCharts()
-                top_industries()
-        
-        with col[1]:
-            bank_trends_chart()
-            total_sales_chart()
+            with colHeader[0]:
+                st.markdown(
+                    f"""
+                    <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+                        <p style="color: black; font-size: 16px; margin-bottom: 4px;">Renda</p>
+                        <p style="color: green; font-size: 32px; font-weight: bold;">${st.session_state.inbound_total:,.2f}</p>
+                    </div>
+                    """, 
+                    unsafe_allow_html=True
+                )
+            
+            with colHeader[1]:
+                st.markdown(
+                    f"""
+                    <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+                        <p style="color: black; font-size: 16px; margin-bottom: 4px;">Despesas</p>
+                        <p style="color: red; font-size: 32px; font-weight: bold;">${st.session_state.outbound_total:,.2f}</p>
+                    </div>
+                    """, 
+                    unsafe_allow_html=True
+                )
+            
+            with colHeader[2]:
+                net_value = st.session_state.inbound_total - st.session_state.outbound_total
+                net_color = "green" if net_value >= 0 else "red"
+                st.markdown(
+                    f"""
+                    <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+                        <p style="color: black; font-size: 16px; margin-bottom: 4px;">Total líquido</p>
+                        <p style="color: {net_color}; font-size: 32px; font-weight: bold;">${net_value:,.2f}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
+            with colHeader[3]:
+                st.markdown(
+                    f"""
+                    <div style="border: 2px solid white; padding: 20px; text-align: left; border-radius: 5px;">
+                        <p style="color: black; font-size: 16px; margin-bottom: 4px;">Número de Vendas</p>
+                        <p style="color: green; font-size: 32px; font-weight: bold;">{st.session_state.number_of_sales}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
+                    
+            
+            col = st.columns((1, 1), gap='large')
+            with col[0]:
+                with st.container():
+                    pieCharts()
+                    top_industries()
+            
+            with col[1]:
+                bank_trends_chart()
+                total_sales_chart()
         
         def openai_prompting(prompt):
             global newprompt
@@ -613,7 +661,7 @@ def main():
             user_query = prompt
         
             # Extract the first five rows of df['sales'] as an example to include in the prompt
-            sample_data = df['sales'].head(1).to_string(index=False)
+            sample_data = st.session_state.df['sales'].head(1).to_string(index=False)
         
             # Ask the model to generate a prompt that includes the user query and lets it know about the data
             generation_prompt = f"""
@@ -627,21 +675,33 @@ def main():
         
             Please generate the code that does what is requested based on the user's query and the data provided.
             """
-            
-            with st.spinner("Running AI Analysis..."):
+            st.markdown(
+                """
+                <style>
+                .stSpinner > div > div {
+                    color: black !important;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+            with st.spinner("Executando análise de IA..."):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
             
             if output:
                 # Remove unnecessary markdown formatting
-                output = output.replace("```python\n", "").replace("\n```", "")
+                output = output.replace("```python\n", "").replace("\n```", "").replace("df", "st.session_state.df")
                 
                 # Calculate the number of lines in the output to determine the height
                 num_lines = len(output.split('\n'))
                 height = min(max(num_lines * 20, 100), 400)
-                
+                st.markdown(
+                        "<p style='color:black; font-size:16px; margin-bottom: 0px;'>Código Gerado:</p>", 
+                        unsafe_allow_html=True
+                    )                    
                 # Display the generated code
-                st.text_area("Generated Code:", value=output, height=height)
+                st.text_area(label="", value=output, height=height)
         
                 # Prepare a dictionary to capture the local variables
                 local_vars = {}
@@ -671,14 +731,14 @@ def main():
         
                         # Format the result based on its type
                         if isinstance(last_var_value, (int, float)):
-                            formatted_result = f"\n\nResult: ${last_var_value:,.2f}"
-                            st.write(formatted_result)
+                            formatted_result = f"<p style='color:black;'>\n\nResult: ${last_var_value:,.2f}</p>"
+                            st.markdown(formatted_result, unsafe_allow_html=True)
                         elif isinstance(last_var_value, pd.Series):
                             formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
-                            st.write(formatted_result)
+                            st.markdown(f"<p style='color:black;'>{formatted_result}</p>", unsafe_allow_html=True)
                         else:
                             formatted_result = str(last_var_value)
-                            st.write(formatted_result)
+                            st.markdown(f"<p style='color:black;'>{formatted_result}</p>", unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f"Error executing the code: {e}")
         
@@ -686,7 +746,7 @@ def main():
         st.markdown("""<h3 style='color: black;'>Insira um Prompt Para Análise de IA:</h3>""",unsafe_allow_html=True)
         prompt = st.text_area(label="")  # Adding a label argument
         
-        if st.button("Run AI Analysis"):
+        if st.button("Execute a Análise de IA"):
             promptrun(prompt)
         
         if st.button("Logout", on_click=_reset_login_cb):
