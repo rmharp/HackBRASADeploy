@@ -11,6 +11,9 @@ import os
 import sys
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
+import altair as alt
+import json
+import vegafusion
 
 load_dotenv()
 
@@ -18,6 +21,9 @@ st.set_page_config(layout="wide")
 
 # Define the relative file path
 relative_file_path = 'backend/data/unique_document_ids.csv'
+
+#Define the grouped file path
+grouped_file_path = 'backend/data/grouped_data.csv'
 
 # Load the CSV file to get the sales data
 def load_sales_data():
@@ -48,6 +54,30 @@ if 'data_loaded' not in st.session_state:
 
 # Load the sales data
 df_sales = load_sales_data()
+
+def load_grouped_data():
+    # Print the current working directory
+    #st.write("Current working directory:", os.getcwd())
+    
+    # Convert the relative file path to an absolute path based on the current working directory
+    file_path = os.path.join(os.getcwd(), grouped_file_path)
+    
+    # Check if the file exists
+    if os.path.exists(file_path):
+        #st.write("File found:", file_path)
+        try:
+            # Attempt to read the CSV file
+            df = pd.read_csv(file_path)
+            #st.write("File loaded successfully!")
+            return df
+        except Exception as e:
+            st.error(f"Error reading the file: {e}")
+            return pd.DataFrame()  # Return an empty DataFrame if the file cannot be read
+    else:
+        st.error(f"File not found: {file_path}")
+        return pd.DataFrame()  # Return an empty DataFrame if the file does not exist
+
+grouped_df = load_grouped_data()
 
 state = st.session_state
 
@@ -100,11 +130,63 @@ def login_page():
             if not state.logged_in:
                 st.warning("Wrong username or password.")
         
-        
+        generate_graph()
+
     else:
         st.write(f"Welcome, {state.username}!")
         if st.button("Logout", on_click=_reset_login_cb):
             st.success("You have logged out successfully.")
+
+def generate_graph():
+    #grouped_df_display = grouped_df['sales'].groupby(['document_id', 'state']).size().reset_index(name='transaction_count')
+    
+    with open('backend/data/br-states.json', 'r') as file:
+        statesdata = json.load(file)
+
+    alt.data_transformers.enable("vegafusion")
+    states = alt.topo_feature('backend/data/br-states.json', 'estados')  # Ensure 'objects.estados' matches TopoJSON structure
+
+    state_id_map = {
+    'RN': 'Rio Grande do Norte',
+    'SC': 'Santa Catarina',
+    'RS': 'Rio Grande do Sul',
+    'PR': 'Paraná',
+    'RJ': 'Rio de Janeiro',
+    'SP': 'São Paulo',
+    'MG': 'Minas Gerais',
+    'CE': 'Ceará',
+    'MT': 'Mato Grosso',
+    'DF': 'Distrito Federal',
+    'RR': 'Roraima',
+    'AL': 'Alagoas',
+    'GO': 'Goiás',
+    'SE': 'Sergipe',
+    'PE': 'Pernambuco',
+    'PB': 'Paraíba',
+    'BA': 'Bahia',
+    'AC': 'Acre',
+    'AM': 'Amazonas',
+    'ES': 'Espírito Santo',
+    'PA': 'Pará',
+    'PI': 'Piauí'
+    }
+    grouped_df['state_id'] = grouped_df['state']
+
+    # Create the chart
+    chart = alt.Chart(states).mark_geoshape().encode(
+        color=alt.Color('transaction_count:Q', scale=alt.Scale(scheme='blues')),
+        stroke=alt.value('#154360')
+    ).transform_lookup(
+        lookup='id',  # Use 'id' field from TopoJSON
+        from_=alt.LookupData(grouped_df, 'state', ['transaction_count'])
+    ).properties(
+        width=500,
+        height=300
+    ).project(
+        type='mercator'  # Changed to 'mercator' for a more general projection
+    )
+
+    chart
 
 # Main function
 def main():
