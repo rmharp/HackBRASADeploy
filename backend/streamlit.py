@@ -155,7 +155,7 @@ def main():
     else:
         # Current Client ID
         current_id = state.username
-        openai.api_key = st.secrets["OPENAI_API_KEY"]
+        openai.api_key = os.getenv("OPENAI_API_KEY")
     
         # Initialize global variables if not present
         if 'inbound_total' not in st.session_state:
