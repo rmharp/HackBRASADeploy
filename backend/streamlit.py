@@ -702,6 +702,10 @@ def main():
             div.ai-output p {
                 color: black;
             }
+            /* Change the spinner text color to black */
+            div[role="alertdialog"] div[aria-live="polite"] {
+                color: black;
+            }
             </style>
             """, unsafe_allow_html=True)
 
@@ -729,7 +733,17 @@ def main():
         
             Please generate the code that does what is requested based on the user's query and the data provided.
             """
-            with st.spinner(f"<div class='ai-output'>Executando análise de IA...</div>"):
+
+            st.markdown("""
+            <style>
+            /* Style the spinner text */
+            div[role="alertdialog"] div[aria-live="polite"] {
+                color: black !important;
+                font-size: 18px;  /* You can adjust the font size if needed */
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            with st.spinner(f"<div class='ai-output'><p>Executando análise de IA...</p></div>"):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
             
