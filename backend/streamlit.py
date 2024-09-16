@@ -175,9 +175,6 @@ def main():
                 .stApp {
                     background-color: #f0f2f6;
                 }
-                div[data-testid="stMarkdownContainer"] p {
-                color: black !important;
-                }
                 </style>
                 """,
                 unsafe_allow_html=True
@@ -699,6 +696,15 @@ def main():
         def promptrun(prompt):
             global output  # Ensure that output is accessible here
             
+            st.markdown("""
+            <style>
+            /* Only affect paragraphs inside the AI output container */
+            div.ai-output p {
+                color: black;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
             # Initialize global variables
             newprompt = ""
             output = ""
@@ -723,16 +729,6 @@ def main():
         
             Please generate the code that does what is requested based on the user's query and the data provided.
             """
-            st.markdown(
-                """
-                <style>
-                .stSpinner > div > div {
-                    color: black !important;
-                }
-                </style>
-                """,
-                unsafe_allow_html=True
-            )
             with st.spinner("Executando análise de IA..."):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
@@ -778,16 +774,17 @@ def main():
                         last_var_value = local_vars[last_var_name]
 
                         # Format the result based on its type
-                        # If the result is a number
                         if isinstance(last_var_value, (int, float)):
-                            formatted_result = f"<p style='color:black !important;'>Result: ${last_var_value:,.2f}</p>"
+                            formatted_result = f"<div class='ai-output'><p>Result: ${last_var_value:,.2f}</p></div>"
                             st.markdown(formatted_result, unsafe_allow_html=True)
                         elif isinstance(last_var_value, pd.Series):
                             formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
-                            st.markdown(f"<p style='color:black !important;'>{formatted_result}</p>", unsafe_allow_html=True)
+                            formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                            st.markdown(formatted_result, unsafe_allow_html=True)
                         else:
                             formatted_result = str(last_var_value)
-                            st.markdown(f"<p style='color:black !important;'>{formatted_result}</p>", unsafe_allow_html=True)
+                            formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                            st.markdown(formatted_result, unsafe_allow_html=True)
 
                 except Exception as e:
                     st.error(f"Error executing the code: {e}")
