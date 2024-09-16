@@ -103,6 +103,7 @@ def _reset_login_cb():
 init_state('logged_in', False)
 init_state('username', '')
 init_state('password', '')
+init_state('model_choice', 'gpt-3.5')  # Initialize model choice
 
 # -----------------------------------------------------------------------------
 
@@ -124,6 +125,16 @@ def login_page():
             on_change=_set_state_cb, kwargs={'password': 'password_input'}
         )
         
+        # Dropdown to select the model
+        model_options = ['gpt-3.5', 'gpt-4o']
+        st.selectbox(
+            "Selecione o modelo de IA",
+            options=model_options,
+            index=model_options.index('gpt-3.5'),
+            key='model_choice_input',
+            on_change=_set_state_cb, kwargs={'model_choice': 'model_choice_input'}
+        )
+
         if st.button("O Login", on_click=_set_login_cb, args=(state.username, state.password)):
             if not state.logged_in:
                 st.warning("Nome de usuário ou senha incorretos.")
@@ -563,12 +574,13 @@ def main():
             with tab4:
                 total_sales_chart()
         
-        def openai_prompting(prompt):
+        # Modify the openai_prompting function to handle both models
+        def openai_prompting(prompt, model_choice):
             global newprompt
             global output
             global total_tokens_used
             global cost
-            print("\n\nRunning GPT-3.5")
+            print(f"\n\nRunning {model_choice}")
         
             # Define the endpoint URL
             url = "https://api.openai.com/v1/chat/completions"
@@ -581,7 +593,7 @@ def main():
         
             # Define the request payload (input text and parameters)
             data = {
-                "model": "gpt-3.5-turbo",
+                "model": model_choice,  # Use the selected model
                 "messages": [{
                         "role": "system",
                         "content": (
@@ -615,9 +627,14 @@ def main():
                 completion_tokens_used = response.json()['usage']['completion_tokens']
                 total_tokens_used = response.json()['usage']['total_tokens']
                 
-                # Pricing based on gpt-3.5-turbo
-                cost_per_input_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for inputs
-                cost_per_output_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for outputs
+                # Pricing based on the selected model
+                if model_choice == 'gpt-3.5-turbo':
+                    cost_per_input_token = 3.00 / 1_000_000
+                    cost_per_output_token = 6.00 / 1_000_000
+                else model_choice == 'gpt-4o':
+                    cost_per_input_token = 5.00 / 1_000_000
+                    cost_per_output_token = 15.00 / 1_000_000
+                
                 cost = prompt_tokens_used * cost_per_input_token + completion_tokens_used * cost_per_output_token
         
                 # Print the completion text, tokens used, and cost
@@ -629,6 +646,7 @@ def main():
             else:
                 # Print error message if request was not successful
                 print("Error:", response.text)
+                return None
         
         def promptrun(prompt):
             global output  # Ensure that output is accessible here
@@ -677,7 +695,7 @@ def main():
             """
             with st.spinner("Executando análise de IA..."):
                 # Send the request to OpenAI to generate the prompt
-                output = openai_prompting(prompt)
+                output = openai_prompting(prompt, model_choice=state.model_choice)
             
             if output:
                 # Remove unnecessary markdown formatting
