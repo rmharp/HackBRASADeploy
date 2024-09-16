@@ -487,6 +487,10 @@ def main():
                 h3, h1 {{
                     color: {theme['primary']} !important;
                 }}
+                /* Make tabs text black */
+                div[data-testid="stTabLabel"] {{
+                    color: black !important;
+                }}
                 </style>
             """, unsafe_allow_html=True)
 
