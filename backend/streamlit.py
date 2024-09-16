@@ -16,6 +16,14 @@ import json
 import vegafusion
 from PIL import Image
 
+st.markdown("""
+    <style>
+    .stMarkdown p {
+        color: black !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 load_dotenv()
 
 st.set_page_config(layout="wide")
