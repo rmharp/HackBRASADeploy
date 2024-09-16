@@ -758,11 +758,11 @@ def main():
                 # Debug: Print the joined lines before execution
                 print("Executing the following code:\n")
                 print(joined_lines)
-        
+
                 # Execute the code and capture the local variables
                 try:
                     exec(joined_lines, globals(), local_vars)
-        
+
                     # Check if plt.show() was used and if there is an active figure
                     if 'plt.show()' in joined_lines:
                         # Capture the current figure
@@ -773,7 +773,7 @@ def main():
                         # Get the last variable name and value
                         last_var_name = list(local_vars.keys())[-1]
                         last_var_value = local_vars[last_var_name]
-        
+
                         # Format the result based on its type
                         if isinstance(last_var_value, (int, float)):
                             formatted_result = f"<p style='color:black;'>\n\nResult: ${last_var_value:,.2f}</p>"
@@ -784,6 +784,7 @@ def main():
                         else:
                             formatted_result = str(last_var_value)
                             st.markdown(f"<p style='color:black;'>{formatted_result}</p>", unsafe_allow_html=True)
+
                 except Exception as e:
                     st.error(f"Error executing the code: {e}")
         
