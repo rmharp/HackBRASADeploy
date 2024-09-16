@@ -743,7 +743,7 @@ def main():
             }
             </style>
             """, unsafe_allow_html=True)
-            with st.spinner(f"<div class='ai-output'><p>Executando análise de IA...</p></div>"):
+            with st.spinner("Executando análise de IA..."):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
             
