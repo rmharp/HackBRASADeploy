@@ -775,15 +775,16 @@ def main():
                         last_var_value = local_vars[last_var_name]
 
                         # Format the result based on its type
+                        # If the result is a number
                         if isinstance(last_var_value, (int, float)):
-                            formatted_result = f"<p style='color:black;'>\n\nResult: ${last_var_value:,.2f}</p>"
+                            formatted_result = f"<p style='color:black !important;'>Result: ${last_var_value:,.2f}</p>"
                             st.markdown(formatted_result, unsafe_allow_html=True)
                         elif isinstance(last_var_value, pd.Series):
                             formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
-                            st.markdown(f"<p style='color:black;'>{formatted_result}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:black !important;'>{formatted_result}</p>", unsafe_allow_html=True)
                         else:
                             formatted_result = str(last_var_value)
-                            st.markdown(f"<p style='color:black;'>{formatted_result}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='color:black !important;'>{formatted_result}</p>", unsafe_allow_html=True)
 
                 except Exception as e:
                     st.error(f"Error executing the code: {e}")
