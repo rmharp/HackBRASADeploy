@@ -631,7 +631,7 @@ def main():
                 if model_choice == 'gpt-3.5-turbo':
                     cost_per_input_token = 3.00 / 1_000_000
                     cost_per_output_token = 6.00 / 1_000_000
-                else model_choice == 'gpt-4o':
+                elif model_choice == 'gpt-4o':
                     cost_per_input_token = 5.00 / 1_000_000
                     cost_per_output_token = 15.00 / 1_000_000
                 
