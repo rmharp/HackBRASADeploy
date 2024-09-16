@@ -704,8 +704,8 @@ def main():
                 color: black;
             }
             /* Change the spinner text color to black */
-            div[role="status"] div[aria-live="polite"] {
-                color: black;
+            div.stSpinner div {
+                color: black !important;
             }
             /* Change the error message text color to black */
             div.stAlert p {
