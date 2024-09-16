@@ -488,7 +488,7 @@ def main():
                     color: {theme['primary']} !important;
                 }}
                 /* Make tabs text black */
-                div[data-testid="stTabLabel"] {{
+                button[data-testid="stTab"] div[data-testid="stMarkdownContainer"] p {{
                     color: black !important;
                 }}
                 </style>
