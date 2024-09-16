@@ -126,7 +126,7 @@ def login_page():
         
         if st.button("O Login", on_click=_set_login_cb, args=(state.username, state.password)):
             if not state.logged_in:
-                st.warning("Wrong username or password.")
+                st.warning("Nome de usuário ou senha incorretos.")
         
         display_chart_image()
 
@@ -161,6 +161,10 @@ def main():
             <style>
             .stApp {
                 background-color: #f0f2f6;
+            }
+            /* Make tabs text black */
+            div[data-testid="stHorizontalBlock"] button div[data-testid='stMarkdownContainer'] p {
+                color: black !important;
             }
             </style>
             """,
@@ -236,58 +240,32 @@ def main():
             st.session_state.inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
             st.session_state.outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
         
-            # Calculate percentages
-            total_spending = st.session_state.inbound_total + st.session_state.outbound_total
-            inbound_percent = round((st.session_state.inbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
-            outbound_percent = round((st.session_state.outbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
-        
-            # Create subplots with 1 row and 2 columns
-            fig = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
-        
-            # Add traces for inbound
-            fig.add_trace(go.Pie(
-                values=[inbound_percent, 100 - inbound_percent],
-                labels=['', ''],
+            # Create pie chart
+            fig = go.Figure(data=[go.Pie(
+                labels=['Ganhos', 'Perdas'],
+                values=[st.session_state.inbound_total, st.session_state.outbound_total],
                 hole=.7,
-                marker_colors=[color_themes[selected_theme]['primary'], '#ffffff'],
-                textinfo='none',
-                hoverinfo='none',
-                showlegend=False,
-                domain={'x': [0, 0.5], 'y': [0, 1]}  # Specify domain for the first pie chart
-            ), 1, 1)
-
-            # Add traces for outbound
-            fig.add_trace(go.Pie(
-                values=[outbound_percent, 100 - outbound_percent],
-                labels=['', ''],
-                hole=.7,
-                marker_colors=[color_themes[selected_theme]['secondary'], '#ffffff'],
-                textinfo='none',
-                hoverinfo='none',
-                showlegend=False,
-                domain={'x': [0.5, 1], 'y': [0, 1]}  # Specify domain for the second pie chart
-            ), 1, 2)
-
-            # Add annotations for the pie charts
-            fig.add_annotation(x=0.15, y=0.5, text=f"{inbound_percent}%", font=dict(size=24, color=color_themes[selected_theme]['primary']), showarrow=False, xref="paper", yref="paper")
-            fig.add_annotation(x=0.85, y=0.5, text=f"{outbound_percent}%", font=dict(size=24, color=color_themes[selected_theme]['secondary']), showarrow=False, xref="paper", yref="paper")
-
+                marker_colors=[color_themes[selected_theme]['primary'], color_themes[selected_theme]['secondary']],
+                textinfo='label+percent',
+                hoverinfo='label+value',
+                showlegend=False
+            )])
+        
             # Update layout
             fig.update_layout(
                 title= {
                     'font': {'color': color_themes[selected_theme]['text']},
-                    'text':'Ganhos/Perdas',
+                    'text':'Ganhos vs. Perdas',
                     'x': 0.5,
                     'xanchor': 'center'
                 },
-                height=300,
-                width=800,
+                height=400,
                 margin=dict(t=100, b=0, l=0, r=0),
-                font=dict(color='white'),
+                font=dict(color='black'),
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
             )
-
+        
             st.plotly_chart(fig, use_container_width=True)
         
         def total_sales_chart():
@@ -334,7 +312,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 yaxis=dict(
                     title='Vendas Cumulativas ($)',
@@ -342,7 +320,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 shapes=[
                     dict(
@@ -380,7 +358,7 @@ def main():
                 },
                 paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white'),
+                font=dict(color='black'),
                 margin=dict(
                     l=100,
                     r=50,
@@ -393,7 +371,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 yaxis=dict(
                     title='Dinheiro Líquido ($)',
@@ -401,7 +379,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 shapes=[
                     dict(
@@ -461,7 +439,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 yaxis=dict(
                     title='Número',
@@ -469,7 +447,7 @@ def main():
                     tickfont=dict(color='black'),
                     showgrid=True,
                     gridcolor='#444',
-                    color='white'
+                    color='black'
                 ),
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
@@ -569,13 +547,16 @@ def main():
                         unsafe_allow_html=True
                     )
 
-            # Use tabs instead of columns for charts
-            tab1, tab2 = st.tabs(["Resumo", "Tendências Bancárias"])
+            # Use multiple tabs to spread out the graphs
+            tab1, tab2, tab3, tab4 = st.tabs(["Ganhos vs. Perdas", "Principais Indústrias", "Despesas Bancárias", "Vendas Totais"])
+
             with tab1:
                 pieCharts()
-                top_industries()
             with tab2:
+                top_industries()
+            with tab3:
                 bank_trends_chart()
+            with tab4:
                 total_sales_chart()
         
         def openai_prompting(prompt):
