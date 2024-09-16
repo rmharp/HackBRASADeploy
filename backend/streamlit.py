@@ -729,7 +729,7 @@ def main():
         
             Please generate the code that does what is requested based on the user's query and the data provided.
             """
-            with st.spinner("Executando análise de IA..."):
+            with st.spinner(f"<div class='ai-output'>Executando análise de IA...</div>"):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
             
