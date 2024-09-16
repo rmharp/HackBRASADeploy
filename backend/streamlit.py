@@ -696,6 +696,7 @@ def main():
         def promptrun(prompt):
             global output  # Ensure that output is accessible here
             
+            # Inject custom CSS to style spinner and error messages
             st.markdown("""
             <style>
             /* Only affect paragraphs inside the AI output container */
@@ -703,7 +704,11 @@ def main():
                 color: black;
             }
             /* Change the spinner text color to black */
-            div[role="alertdialog"] div[aria-live="polite"] {
+            div[role="status"] div[aria-live="polite"] {
+                color: black;
+            }
+            /* Change the error message text color to black */
+            div.stAlert p {
                 color: black;
             }
             </style>
@@ -733,16 +738,6 @@ def main():
         
             Please generate the code that does what is requested based on the user's query and the data provided.
             """
-
-            st.markdown("""
-            <style>
-            /* Style the spinner text */
-            div[role="alertdialog"] div[aria-live="polite"] {
-                color: black !important;
-                font-size: 18px;  /* You can adjust the font size if needed */
-            }
-            </style>
-            """, unsafe_allow_html=True)
             with st.spinner("Executando análise de IA..."):
                 # Send the request to OpenAI to generate the prompt
                 output = openai_prompting(prompt)
@@ -784,24 +779,27 @@ def main():
                         plt.clf()        # Clear the figure after rendering
                     else:
                         # Get the last variable name and value
-                        last_var_name = list(local_vars.keys())[-1]
-                        last_var_value = local_vars[last_var_name]
-
-                        # Format the result based on its type
-                        if isinstance(last_var_value, (int, float)):
-                            formatted_result = f"<div class='ai-output'><p>Result: ${last_var_value:,.2f}</p></div>"
-                            st.markdown(formatted_result, unsafe_allow_html=True)
-                        elif isinstance(last_var_value, pd.Series):
-                            formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
-                            formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
-                            st.markdown(formatted_result, unsafe_allow_html=True)
+                        if local_vars:
+                            last_var_name = list(local_vars.keys())[-1]
+                            last_var_value = local_vars[last_var_name]
+                            # Format the result based on its type
+                            if isinstance(last_var_value, (int, float)):
+                                formatted_result = f"<div class='ai-output'><p>Result: ${last_var_value:,.2f}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
+                            elif isinstance(last_var_value, pd.Series):
+                                formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
+                                formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
+                            else:
+                                formatted_result = str(last_var_value)
+                                formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
                         else:
-                            formatted_result = str(last_var_value)
-                            formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
-                            st.markdown(formatted_result, unsafe_allow_html=True)
+                            st.warning("Nenhum resultado foi gerado pelo código executado.")
 
                 except Exception as e:
-                    st.error(f"Error executing the code: {e}")
+                    # Style the error message text to appear in black
+                    st.error(f"Erro ao executar o código: {e}")
         
         # AI Input Section in Streamlit
         st.markdown("""<h3 style='color: black;'>Insira um Prompt Para Análise de IA:</h3>""",unsafe_allow_html=True)
