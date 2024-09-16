@@ -163,7 +163,7 @@ def main():
                 background-color: #f0f2f6;
             }
             /* Make tabs text black */
-            div[data-testid="stTabBar"] button div[data-testid="stMarkdownContainer"] p {
+            div[data-testid="stHorizontalBlock"] button div[data-testid='stMarkdownContainer'] p {
                 color: black !important;
             }
             </style>
@@ -240,55 +240,22 @@ def main():
             st.session_state.inbound_total = user_data[user_data['type'] == 'pix_in']['value'].sum()
             st.session_state.outbound_total = user_data[user_data['type'] == 'pix_out']['value'].sum()
         
-            # Calculate percentages
-            total_spending = st.session_state.inbound_total + st.session_state.outbound_total
-            inbound_percent = round((st.session_state.inbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
-            outbound_percent = round((st.session_state.outbound_total / total_spending) * 100, 2) if total_spending > 0 else 0
-        
-            # Create subplots with 1 row and 2 columns
-            fig = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
-        
-            # Add traces for inbound
-            fig.add_trace(go.Pie(
-                values=[inbound_percent, 100 - inbound_percent],
-                labels=['', ''],
+            # Create pie chart
+            fig = go.Figure(data=[go.Pie(
+                labels=['Ganhos', 'Perdas'],
+                values=[st.session_state.inbound_total, st.session_state.outbound_total],
                 hole=.7,
-                marker_colors=[color_themes[selected_theme]['primary'], '#ffffff'],
-                textinfo='none',
-                hoverinfo='none',
-                showlegend=False,
-                domain={'x': [0, 0.5], 'y': [0, 1]}  # Specify domain for the first pie chart
-            ), 1, 1)
-
-            # Add traces for outbound
-            fig.add_trace(go.Pie(
-                values=[outbound_percent, 100 - outbound_percent],
-                labels=['', ''],
-                hole=.7,
-                marker_colors=[color_themes[selected_theme]['secondary'], '#ffffff'],
-                textinfo='none',
-                hoverinfo='none',
-                showlegend=False,
-                domain={'x': [0.5, 1], 'y': [0, 1]}  # Specify domain for the second pie chart
-            ), 1, 2)
-
-            # Add annotations for the pie charts
-            fig.add_annotation(
-                x=0.25, y=0.5, text=f"{inbound_percent}%", 
-                font=dict(size=24, color=color_themes[selected_theme]['primary']), 
-                showarrow=False, xref="paper", yref="paper"
-            )
-            fig.add_annotation(
-                x=0.75, y=0.5, text=f"{outbound_percent}%", 
-                font=dict(size=24, color=color_themes[selected_theme]['secondary']), 
-                showarrow=False, xref="paper", yref="paper"
-            )
-
+                marker_colors=[color_themes[selected_theme]['primary'], color_themes[selected_theme]['secondary']],
+                textinfo='label+percent',
+                hoverinfo='label+value',
+                showlegend=False
+            )])
+        
             # Update layout
             fig.update_layout(
                 title= {
                     'font': {'color': color_themes[selected_theme]['text']},
-                    'text':'Ganhos/Perdas',
+                    'text':'Ganhos vs. Perdas',
                     'x': 0.5,
                     'xanchor': 'center'
                 },
@@ -298,7 +265,7 @@ def main():
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
             )
-
+        
             st.plotly_chart(fig, use_container_width=True)
         
         def total_sales_chart():
@@ -426,11 +393,11 @@ def main():
         
         
             st.plotly_chart(fig, use_container_width=True)
-    
+
         def top_industries():
             # Perform a left join of the MCC dictionary (mcc_df) into sales_df on the 'mcc' column
             sales_df = pd.merge(st.session_state.df['sales'], st.session_state.df['mcc'], on='mcc', how='left')
-    
+
             # Ensure 'document_id' is a string
             sales_df['document_id'] = sales_df['document_id'].astype(str)
             
@@ -447,7 +414,7 @@ def main():
             
             # Ensure we have at most 5 industries
             industry_counts = industry_counts.head(5)
-    
+
             # Create a bar chart using Plotly Graph Objects
             fig = go.Figure(
                 data=[go.Bar(
@@ -457,7 +424,7 @@ def main():
                     width=0.3
                 )]
             )
-    
+
             # Update the layout for aesthetics
             fig.update_layout(
                 title={
@@ -495,10 +462,10 @@ def main():
                     )
                 ]
             )
-    
+
             # Display the bar chart in Streamlit
             st.plotly_chart(fig, use_container_width=True)
-    
+
         def apply_theme(theme_name):
             theme = color_themes[theme_name]
             st.markdown(f"""
@@ -593,15 +560,180 @@ def main():
                 total_sales_chart()
         
         def openai_prompting(prompt):
-            # Existing code for OpenAI interaction
-            # ...
-            pass
+            global newprompt
+            global output
+            global total_tokens_used
+            global cost
+            print("\n\nRunning GPT-3.5")
+        
+            # Define the endpoint URL
+            url = "https://api.openai.com/v1/chat/completions"
+        
+            # Set up the request headers with your API key
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {openai.api_key}"
+            }
+        
+            # Define the request payload (input text and parameters)
+            data = {
+                "model": "gpt-3.5-turbo",
+                "messages": [{
+                        "role": "system",
+                        "content": (
+                        "Você é um cientista de dados com o objetivo de analisar dados em resposta a solicitações do usuário e retornar código e texto exclusivamente em português."
+                        " Os dados são armazenados em df['sales'], contendo informações sobre vendas, e já foram pré-processados, resultando em df['sales'].shape de (264933, 7), com as colunas: ['document_id', 'date_time', 'value', 'card_number', 'type', 'mcc', 'state'], "
+                        " e os tipos de dados: [dtype('int64'), dtype('<M8[us]'), dtype('float64'), dtype('O'), dtype('O'), dtype(' int64 '), dtype('O')]. Por favor, retorne apenas código Python executável para consultar os dados e responder à solicitação do usuário, e nada mais."
+                        " Você pode usar numpy, pandas ou plots para completar a tarefa conforme a solicitação do usuário. Anexei a primeira linha de dados como exemplo. O código deve fornecer a resposta ao usuário"
+                        " na forma mais simples possível, como um número inteiro acompanhado por um símbolo $. Além disso, quando um gráfico for solicitado, certifique-se de que o gráfico seja exibido com os eixos ajustados adequadamente. Certifique-se de usar os dados armazenados em df['sales']. Lembre-se que todo texto utilizado em gráficos deverá estar somente em português."
+                    )
+                    },
+                    {"role": "user", "content": f"{prompt}"}],
+                "max_tokens": 800
+            }
+            if prompt != "":
+                newprompt = prompt
+                response = requests.post(url, json=data, headers=headers)
+            else:
+                print("You have an empty prompt, so printing the previous prompt again or default if first prompt is empty.\n")
+                print(f"Prompt: {newprompt}")
+                print(f"\nOutput: {output}")
+                print("\nTokens Used: " + str(total_tokens_used))
+                print("Cost: $" + format(cost, ".8f").rstrip("0").rstrip("."))
+                return
+        
+            # Check if request was successful (status code 200)
+            if response.status_code == 200:
+                # Parse response to get the text and number of tokens
+                output = response.json()['choices'][0]['message']['content']
+                output = output.strip().replace("\n\n", "\n")
+                prompt_tokens_used = response.json()['usage']['prompt_tokens']
+                completion_tokens_used = response.json()['usage']['completion_tokens']
+                total_tokens_used = response.json()['usage']['total_tokens']
+                
+                # Pricing based on gpt-3.5-turbo
+                cost_per_input_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for inputs
+                cost_per_output_token = 0.002 / 1_000  # $0.002 per 1,000 tokens for outputs
+                cost = prompt_tokens_used * cost_per_input_token + completion_tokens_used * cost_per_output_token
+        
+                # Print the completion text, tokens used, and cost
+                print(f"Prompt: {newprompt}")
+                print(f"\nOutput: {output}")
+                print("\nTokens Used: " + str(total_tokens_used))
+                print("Cost: $" + format(cost, ".8f").rstrip("0").rstrip("."))
+                return output
+            else:
+                # Print error message if request was not successful
+                print("Error:", response.text)
         
         def promptrun(prompt):
-            # Existing code for AI analysis
-            # ...
-            pass
+            global output  # Ensure that output is accessible here
+            
+            # Inject custom CSS to style spinner and error messages
+            st.markdown("""
+            <style>
+            /* Only affect paragraphs inside the AI output container */
+            div.ai-output p {
+                color: black;
+            }
+            /* Change the spinner text color to black */
+            div.stSpinner div {
+                color: black !important;
+            }
+            /* Change the error message text color to black */
+            div.stAlert p {
+                color: black;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
+            # Initialize global variables
+            newprompt = ""
+            output = ""
+            total_tokens_used = 0
+            cost = 0.0
+        
+            # Define the user query
+            user_query = prompt
+        
+            # Extract the first five rows of df['sales'] as an example to include in the prompt
+            sample_data = st.session_state.df['sales'].head(1).to_string(index=False)
+        
+            # Ask the model to generate a prompt that includes the user query and lets it know about the data
+            generation_prompt = f"""
+            Given the following user query:
+        
+            {user_query}
+        
+            Please generate code that includes the necessary instructions to analyze the data. The data will be provided, and you can assume that the data is in a Pandas DataFrame. Below are the first five rows of the DataFrame that will be used for analysis:
+        
+            {sample_data}
+        
+            Please generate the code that does what is requested based on the user's query and the data provided.
+            """
+            with st.spinner("Executando análise de IA..."):
+                # Send the request to OpenAI to generate the prompt
+                output = openai_prompting(prompt)
+            
+            if output:
+                # Remove unnecessary markdown formatting
+                output = output.replace("```python\n", "").replace("\n```", "").replace("df", "st.session_state.df")
+                
+                # Calculate the number of lines in the output to determine the height
+                num_lines = len(output.split('\n'))
+                height = min(max(num_lines * 20, 100), 400)
+                st.markdown(
+                        "<p style='color:black; font-size:16px; margin-bottom: 0px;'>Código Gerado:</p>", 
+                        unsafe_allow_html=True
+                    )                    
+                # Display the generated code
+                st.text_area(label="", value=output, height=height)
+        
+                # Prepare a dictionary to capture the local variables
+                local_vars = {}
+        
+                # Split the output into lines and join them
+                lines = output.strip().split('\n')
+                joined_lines = "\n".join(lines)
+        
+                # Debug: Print the joined lines before execution
+                print("Executing the following code:\n")
+                print(joined_lines)
+
+                # Execute the code and capture the local variables
+                try:
+                    exec(joined_lines, globals(), local_vars)
+
+                    # Check if plt.show() was used and if there is an active figure
+                    if 'plt.show()' in joined_lines:
+                        # Capture the current figure
+                        fig = plt.gcf()  # Get the current figure
+                        st.pyplot(fig)   # Pass the figure to st.pyplot()
+                        plt.clf()        # Clear the figure after rendering
+                    else:
+                        # Get the last variable name and value
+                        if local_vars:
+                            last_var_name = list(local_vars.keys())[-1]
+                            last_var_value = local_vars[last_var_name]
+                            # Format the result based on its type
+                            if isinstance(last_var_value, (int, float)):
+                                formatted_result = f"<div class='ai-output'><p>Resultado: ${last_var_value:,.2f}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
+                            elif isinstance(last_var_value, pd.Series):
+                                formatted_result = last_var_value.round(2).apply(lambda x: f"{x:.2f}%").to_string()
+                                formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
+                            else:
+                                formatted_result = str(last_var_value)
+                                formatted_result = f"<div class='ai-output'><p>{formatted_result}</p></div>"
+                                st.markdown(formatted_result, unsafe_allow_html=True)
+                        else:
+                            st.warning("Nenhum resultado foi gerado pelo código executado.")
+
+                except Exception as e:
+                    # Style the error message text to appear in black
+                    st.error(f"Erro ao executar o código: {e}")
+        
         # AI Input Section in Streamlit
         st.markdown("""<h3 style='color: black;'>Insira um Prompt Para Análise de IA:</h3>""",unsafe_allow_html=True)
         prompt = st.text_area(label="")  # Adding a label argument
