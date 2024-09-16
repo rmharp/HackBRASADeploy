@@ -468,7 +468,7 @@ def main():
 
         def apply_theme(theme_name):
             theme = color_themes[theme_name]
-            st.markdown(f'''
+            st.markdown(f"""
                 <style>
                 .stApp {{
                     background-color: {theme['background']};
@@ -491,12 +491,8 @@ def main():
                 button[data-testid="stTab"] div[data-testid="stMarkdownContainer"] p {{
                     color: black !important;
                 }}
-                /* Hide the tab highlight to remove the black line */
-                div[data-baseweb="tab-highlight"] {{
-                    display: none !important;
-                }}
                 </style>
-            ''', unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
         # First Row of Data    
         colHeader = st.columns(4, gap='small')
