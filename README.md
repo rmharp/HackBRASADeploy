@@ -16,7 +16,9 @@ Em uma lista de 100 consultas geradas, os modelos 3.5 e 4.0 obtiveram resultados
 ## Contactos ("Contacts")
 
 Riley Harper - riley.harper@unc.edu
+
 Kensho Pilkey - kpilkey@unc.edu
+
 Michael Puglise - michael.puglise@duke.edu
 
 ## Reconhecimentos ("Recognitions")
