@@ -20,6 +20,7 @@ Kensho Pilkey - kpilkey@unc.edu
 Michael Puglise - michael.puglise@duke.edu
 
 ## Reconhecimentos ("Recognitions")
+
 - Hack BRASA 2024
 - Stone Co. Desafio
 <img width="400" alt="Screenshot 2023-07-26 at 3 52 10 PM" src="https://t4.ftcdn.net/jpg/05/80/61/77/360_F_580617753_UoIdSSVKLnk7YnGWWfrJvKsCFSQLn8eX.jpg">
