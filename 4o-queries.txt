@@ -1,0 +1,100 @@
+Generate a line chart for the sales in 2023.
+What were the sales in February 2023.
+I want to see a bar graph for my sales during the week vs. the weekend.
+Show a pie chart of sales distribution by product category in March 2023.
+Give me a breakdown of daily sales in April 2023.
+What were the total banking transactions in the first quarter of 2023?
+Show a comparison of sales between January and February 2023.
+Generate a chart of the highest selling products in the first half of 2023.
+What were the average sales per day in May 2023?
+Show a scatter plot of sales vs. number of transactions in January 2023.
+Generate a report of the top 5 days with the highest sales in 2023.
+What was the total revenue in March 2023?
+Show a histogram of transaction amounts in April 2023.
+I need a line graph comparing sales growth from January to June 2023.
+What were the lowest sales days in the first quarter of 2023?
+Generate a pie chart of sales by region in February 2023.
+What were the peak sales hours in May 2023? X
+Show a bar graph of sales by payment method in June 2023. X
+Give me a summary of the monthly sales in the first half of 2023.
+What was the customer churn rate in the first quarter of 2023?
+Generate a heatmap of sales by day and hour in March 2023 without using seaborn.
+Show a line chart of the cumulative sales in 2023. X
+What were the top-selling categories in the second quarter of 2023?
+Give me a breakdown of sales by day in February 2023.
+Generate a report on the average transaction size in April 2023.
+What were the total expenses in the first half of 2023?
+Show a pie chart of sales by customer type in March 2023.
+What was the sales conversion rate in May 2023?
+Generate a chart of the most frequent transaction types in June 2023. X
+Show a line graph of sales trends over the first half of 2023. X
+Generate a bar chart of sales by product in January 2023.
+What were the highest grossing products in February 2023?
+Give me a pie chart of sales by employee in March 2023. 
+What were the top 3 most profitable days in April 2023?
+Show a bar graph comparing sales on weekdays vs. weekends in May 2023.
+Generate a line chart showing the cumulative profit in 2023.
+Give me a summary of sales by payment method in February 2023.
+What was the total number of transactions in March 2023? X
+Generate a chart of sales by location in April 2023.
+What were the total refunds processed in the first quarter of 2023? 
+Show a line graph of the average transaction value in May 2023.
+Generate a bar chart of sales by product line in June 2023. 
+What were the most common payment methods in the first half of 2023? X
+Show a heatmap of sales by week in February 2023 without using seaborn.
+What was the growth rate of new customers in the first quarter of 2023? X
+Generate a pie chart of sales by product in January 2023. 
+What were the top 5 most profitable products in March 2023? X
+Show a bar graph comparing sales to expenses in April 2023.
+Generate a report on the average transaction time in May 2023.
+What was the return rate of products in January 2023?
+Show a line graph of customer acquisition over the first half of 2023.
+Generate a pie chart of sales by product category in February 2023.
+What were the top 3 highest revenue days in March 2023? X
+Show a bar graph of sales by customer segment in April 2023.
+Generate a line chart comparing sales and refunds in May 2023.
+What was the highest revenue-generating day in January 2023?
+Show a pie chart of sales by channel in January 2023.
+Generate a report on the top 10 customers in the first quarter of 2023. X
+What were the most sold items in February 2023? X
+Show a bar graph of sales by region in March 2023.
+Generate a line chart of the monthly sales growth in 2023.
+What were the least profitable products in the first half of 2023?
+Show a pie chart of the revenue share by product in April 2023.
+Generate a bar chart of the sales by store in May 2023.
+What were the highest grossing categories in January 2023?
+Show a line graph of sales by month in the first half of 2023.
+Generate a pie chart of sales by product brand in January 2023.
+What were the most discounted products in February 2023? X
+Show a bar graph of sales by product in March 2023.
+Generate a line chart of customer retention in the first quarter of 2023.
+What were the total online vs. in-store sales in April 2023?
+Show a pie chart of sales by payment type in May 2023.
+Generate a bar chart of the top-selling items in January 2023.
+What were the total expenses in the second quarter of 2023?
+Show a line graph of sales trends in the first half of 2023.
+Generate a pie chart of sales by supplier in February 2023.
+What were the most profitable customer segments in March 2023? X
+Show a bar graph comparing sales in urban vs. rural areas in April 2023. X
+Generate a line chart of the weekly sales growth in May 2023.
+What were the top 5 days for transaction volume in January 2023?
+Show a pie chart of the product mix in January 2023.
+Generate a report on the average transaction frequency in the first quarter of 2023. X
+What were the highest spending customers in February 2023? X
+Show a bar graph of the sales by time of day in March 2023.
+Generate a line chart comparing sales and returns in April 2023.
+What was the total revenue from new customers in May 2023?
+Show a pie chart of sales by product type in June 2023. X
+Generate a bar chart of sales by employee in the first half of 2023.
+What were the top-selling products in February 2023?
+Show a bar graph of sales by customer age group in March 2023.
+Generate a pie chart of expenses by category in April 2023.
+What were the total sales during holidays in the first half of 2023? X
+Show a line chart of the sales trend in the first quarter of 2023.
+Generate a report on the average daily sales in January 2023.
+What were the most common transaction issues in February 2023? X
+Show a bar graph comparing sales of new vs. returning customers in May 2023.
+Generate a pie chart of sales by marketing channel in January 2023.
+What was the average transaction size in March 2023?
+Show a line graph of sales by customer acquisition source in January 2023.
+What was the average time between transactions in March 2023? X
