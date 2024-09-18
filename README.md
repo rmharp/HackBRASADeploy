@@ -9,9 +9,9 @@ Desenvolvemos um dashboard interativo para os clientes da Stone Co., que são em
 
 ## Desempenho ("Performance")
 
-Em uma lista de 100 consultas geradas, os modelos 3.5 e 4.0 obtiveram resultados corretos em 74% e 79% das consultas, respectivamente, para 100 consultas fornecidas nos arquivos `.txt` acima. Notavelmente, os resultados não foram considerados incorretos se retornaram um erro por qualquer motivo ou se produziram um gráfico ou número que não respondia diretamente à consulta fornecida pelo usuário. O número de consultas testadas em ambos os modelos foi 100.
+Em uma lista de 100 consultas geradas, os modelos 3.5 e 4o obtiveram resultados corretos em 74% e 79% das consultas, respectivamente, para 100 consultas fornecidas nos arquivos `.txt` acima. Notavelmente, os resultados não foram considerados incorretos se retornaram um erro por qualquer motivo ou se produziram um gráfico ou número que não respondia diretamente à consulta fornecida pelo usuário. O número de consultas testadas em ambos os modelos foi 100.
 
-"In a list of 100 generated queries, models 3.5 and 4.0 obtained correct results in 74% and 79% of the queries, respectively, for 100 queries given in the `.txt` files above. Notably, results were not counted as incorrect if they returned an error for any reason or produced a graph or number that did not directly answer the user's query. The number of queries tested on both models was 100."
+"In a list of 100 generated queries, models 3.5 and 4o obtained correct results in 74% and 79% of the queries, respectively, for 100 queries given in the `.txt` files above. Notably, results were not counted as incorrect if they returned an error for any reason or produced a graph or number that did not directly answer the user's query. The number of queries tested on both models was 100."
 
 ## Contactos ("Contacts")
 
