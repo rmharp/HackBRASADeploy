@@ -1,3 +1,5 @@
+*Note: This project was selected as the only undergraduate research poster for Carolina Data Science Day 2024, with all other posters presented by current or graduated PhDs and Post-Docs.*
+
 # HackBRASA
 <img width="400" alt="Screenshot 2023-07-26 at 3 52 10 PM" src="https://a.storyblok.com/f/182663/1344x756/bc9e2ed35a/stoneco.png">
 
