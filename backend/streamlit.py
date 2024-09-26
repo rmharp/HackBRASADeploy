@@ -103,7 +103,7 @@ def _reset_login_cb():
 init_state('logged_in', False)
 init_state('username', '')
 init_state('password', '')
-init_state('model_choice', 'gpt-3.5')  # Initialize model choice
+init_state('model_choice', 'gpt-3.5-turbo')  # Initialize model choice
 
 # -----------------------------------------------------------------------------
 
@@ -126,11 +126,11 @@ def login_page():
         )
         
         # Dropdown to select the model
-        model_options = ['gpt-3.5', 'gpt-4o']
+        model_options = ['gpt-3.5-turbo', 'gpt-4o']
         st.selectbox(
             "Selecione o modelo de IA",
             options=model_options,
-            index=model_options.index('gpt-3.5'),
+            index=model_options.index('gpt-3.5-turbo'),
             key='model_choice_input',
             on_change=_set_state_cb, kwargs={'model_choice': 'model_choice_input'}
         )
